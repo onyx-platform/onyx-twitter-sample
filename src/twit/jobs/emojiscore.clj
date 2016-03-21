@@ -19,8 +19,9 @@
     (-> base-job
         (add-task (twitter/stream :in (merge batch-settings twitter-config)))
         (add-task (segment-tasks/filter-keypath :in :all [:tweet :place :country-code]))
-        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info {:text [:tweet :text]
-                                                                              :user [:tweet :user :name]
-                                                                              :country [:tweet :place :country-code]}
+        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info
+                                                         {:text [:tweet :text]
+                                                          :user [:tweet :user :name]
+                                                          :country [:tweet :place :country-code]}
                                                          batch-settings))
         (add-task (core-async-task/output :out batch-settings)))))

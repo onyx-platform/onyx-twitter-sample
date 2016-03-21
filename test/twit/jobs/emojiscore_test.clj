@@ -10,7 +10,7 @@
             [clojure.java.io :as io]
             [onyx.api]))
 
-(deftest basic-test
+(deftest emojiscore-test
   (testing "That we can have a basic in-out workflow run through Onyx"
     (let [{:keys [env-config
                   peer-config
