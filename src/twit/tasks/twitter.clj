@@ -34,17 +34,14 @@
                  state]
   (let [date-formatter (fn [time] (.format (new SimpleDateFormat "hh:mm:ss")
                                            (java.util.Date. time)))]
-    (when (and state
-               (not (zero? state)))
+
+    (when (and (:average state)
+               (not (zero? (:average state))))
 
       (swap! aa assoc-in [(map date-formatter
                                [(:lower-bound state-event)
-                                (:upper-bound state-event)]) group-key] state))))
-
-(defonce f (future (loop []
-                     (clojure.pprint/pprint @aa)
-                     (Thread/sleep 30000)
-                     (recur))))
+                                (:upper-bound state-event)]) group-key] {:emojis-per-tweet (long (:average state))
+                                                                         :number-of-tweets (:n state)}))))
 
 (defn emojiscore-by-country [task-name emoji-key task-opts]
   {:task {:task-map (merge {:onyx/name task-name
@@ -59,10 +56,10 @@
                      :window/task task-name
                      :window/type :fixed
                      :window/window-key :created-at
-                     :window/aggregation [:onyx.windowing.aggregation/sum emoji-key]
-                     :window/range [20 :seconds]}]
+                     :window/aggregation [:onyx.windowing.aggregation/average emoji-key]
+                     :window/range [1 :minutes]}]
           :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
-                      :trigger/refinement :onyx.refinements/discarding
+                      :trigger/refinement :onyx.refinements/accumulating
                       :trigger/on :onyx.triggers/watermark
                       :trigger/fire-all-extents? true
                       :trigger/sync ::to-stdout}]}})
