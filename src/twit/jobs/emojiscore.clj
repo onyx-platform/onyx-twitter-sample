@@ -22,12 +22,12 @@
     (-> base-job
         (add-task (twitter-plugin-tasks/stream :in (merge batch-settings twitter-config)))
         (add-task (segment-tasks/filter-keypath :in :all [:tweet :place :country-code]))
-        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info {:text [:tweet :text]
-                                                                              :user [:tweet :user :name]
-                                                                              :created-at [:tweet :created-at]
-                                                                              :country [:tweet :place :country-code]
-                                                                              :id [:tweet :id]} batch-settings))
+        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info
+                                                         {:text [:tweet :text]
+                                                          :user [:tweet :user :name]
+                                                          :created-at [:tweet :created-at]
+                                                          :country [:tweet :place :country-code]
+                                                          :id [:tweet :id]} batch-settings))
         (add-task (tweet/add-emoji-count :count-emojis [:text] [:emoji-count] batch-settings))
-        ;; Bucket by country, count the total emojis
         (add-task (tweet/emojiscore-by-country :bucket-emojis :emoji-count batch-settings))
         (add-task (core-async-task/output :out batch-settings)))))

@@ -1,4 +1,5 @@
-(ns twit.tasks.twitter)
+(ns twit.tasks.twitter
+  (:import [java.text SimpleDateFormat]))
 
 (defn count-emojis
   ""
@@ -24,12 +25,21 @@
 
 (def aa (atom {}))
 
+;;(:event-type :task-event :segment :grouped? :group-key
+;; :lower-bound :upper-bound :log-type :trigger-update :aggregation-update
+;; :window :next-state :extents :extent :trigger-index :trigger-state :extent-state)
+
 (defn to-stdout [event window trigger
                  {:keys [group-key trigger-update] :as state-event}
                  state]
-  (when (and state
-            (not (zero? state)))
-    (swap! aa assoc group-key state)))
+  (let [date-formatter (fn [time] (.format (new SimpleDateFormat "hh:mm:ss")
+                                           (java.util.Date. time)))]
+    (when (and state
+               (not (zero? state)))
+
+      (swap! aa assoc-in [(map date-formatter
+                               [(:lower-bound state-event)
+                                (:upper-bound state-event)]) group-key] state))))
 
 (defonce f (future (loop []
                      (clojure.pprint/pprint @aa)
@@ -50,7 +60,7 @@
                      :window/type :fixed
                      :window/window-key :created-at
                      :window/aggregation [:onyx.windowing.aggregation/sum emoji-key]
-                     :window/range [30 :seconds]}]
+                     :window/range [20 :seconds]}]
           :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
                       :trigger/refinement :onyx.refinements/discarding
                       :trigger/on :onyx.triggers/watermark
