@@ -48,9 +48,9 @@
                      :window/type :fixed
                      :window/window-key :created-at
                      :window/aggregation [:onyx.windowing.aggregation/average :emoji-count]
-                     :window/range [1 :seconds]}]
+                     :window/range [10 :seconds]}]
           :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
-                      :trigger/refinement :onyx.refinements/accumulating
+                      :trigger/refinement :onyx.refinements/discarding
                       :trigger/on :onyx.triggers/watermark
                       :trigger/fire-all-extents? true
                       :trigger/sync :twit.persist.db/dev}]

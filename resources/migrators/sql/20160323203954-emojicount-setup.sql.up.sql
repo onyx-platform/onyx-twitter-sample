@@ -1,4 +1,4 @@
 CREATE TABLE EmojiRank (id integer auto_increment primary key,
-                        timespan integer,
+                        timespan BIGINT,
                         CountryCode varchar(32),
-                        TotalTweets integer)
+                        TotalTweets BIGINT)
