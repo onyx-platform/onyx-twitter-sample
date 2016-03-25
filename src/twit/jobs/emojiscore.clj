@@ -7,7 +7,7 @@
             [onyx.tasks.core-async :as core-async-task]))
 
 (defn build-job
-  [twitter-config batch-size batch-timeout]
+  [twitter-config joplin-config batch-size batch-timeout]
   (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
         base-job {:workflow [[:in :extract-tweet-info]
                              [:extract-tweet-info :count-emojis]
@@ -29,5 +29,7 @@
                                                           :country [:tweet :place :country-code]
                                                           :id [:tweet :id]} batch-settings))
         (add-task (tweet/add-emoji-count :count-emojis [:text] [:emoji-count] batch-settings))
-        (add-task (tweet/emojiscore-by-country :bucket-emojis :emoji-count batch-settings))
+        (add-task (tweet/emojiscore-by-country :bucket-emojis
+                                               joplin-config
+                                               batch-settings))
         (add-task (core-async-task/output :out batch-settings)))))

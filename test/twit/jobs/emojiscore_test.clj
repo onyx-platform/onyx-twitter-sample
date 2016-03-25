@@ -1,6 +1,7 @@
 (ns twit.jobs.emojiscore-test
   (:require [aero.core :refer [read-config]]
             [twit.jobs.emojiscore]
+            [twit.persist.db]
             [onyx.plugin.core-async :refer [get-core-async-channels
                                             take-segments!]]
             [onyx.plugin.twitter]
@@ -14,10 +15,11 @@
   (testing "That we can have a basic in-out workflow run through Onyx"
     (let [{:keys [env-config
                   peer-config
-                  twitter-config]} (read-config (io/resource "config.edn"))
-          job (twit.jobs.emojiscore/build-job twitter-config 10 1000)
+                  twitter-config
+                  joplin-config]} (read-config (io/resource "config.edn") {:transforms [:path :path]})
+          job (twit.jobs.emojiscore/build-job twitter-config joplin-config 10 1000)
           {:keys [in out]} (get-core-async-channels job)]
-      (with-test-env [test-env [6 env-config peer-config]]
+      (with-test-env [test-env [8 env-config peer-config]]
         (onyx.test-helper/validate-enough-peers! test-env job)
         (onyx.api/submit-job peer-config job)
         (loop [tweet (<!! out)]

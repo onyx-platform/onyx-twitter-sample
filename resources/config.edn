@@ -17,4 +17,16 @@
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr "localhost"
   :onyx.messaging/peer-port 40200
-  :onyx.messaging.aeron/embedded-driver? true}}
+  :onyx.messaging.aeron/embedded-driver? true}
+ :twitter-config
+ {:twitter/consumer-key #env [TWITTER_CONSUMER_KEY]
+  :twitter/consumer-secret #env [TWITTER_CONSUMER_SECRET]
+  :twitter/access-token #env [TWITTER_ACCESS_TOKEN]
+  :twitter/access-secret #env [TWITTER_ACCESS_SECRET]}
+ :joplin-config
+ {:databases {:sql {:type :sql
+                    :url "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"
+                    :migrations-table "ragtime_migrations"}}
+  :migrators {:sql-migrator "resources/migrators/sql"}
+  :environments {:dev [{:db #path [:joplin-config :databases :sql]
+                        :migrator #path [:joplin-config :migrators :sql-migrator]}]}}}
