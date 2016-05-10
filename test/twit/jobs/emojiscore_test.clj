@@ -1,7 +1,6 @@
 (ns twit.jobs.emojiscore-test
   (:require [aero.core :refer [read-config]]
             [twit.jobs.emojiscore]
-            [twit.persist.db]
             [onyx.plugin.core-async :refer [get-core-async-channels
                                             take-segments!]]
             [onyx.plugin.twitter]
@@ -9,6 +8,7 @@
             [onyx.test-helper :refer [with-test-env]]
             [clojure.test :refer [is testing deftest]]
             [clojure.java.io :as io]
+            [joplin.jdbc.database]
             [onyx.api]))
 
 (deftest emojiscore-test

@@ -1,10 +1,14 @@
 (ns twit.jobs.emojiscore
-  (:require [onyx.job :refer [add-task]]
-            [twit.tasks.math :as math]
-            [twit.tasks.twitter :as tweet]
-            [twit.tasks.segment :as segment-tasks]
-            [onyx.tasks.twitter :as twitter-plugin-tasks]
-            [onyx.tasks.core-async :as core-async-task]))
+  (:require
+   [twit.tasks.math :as math]
+   [onyx.schema :as os]
+   [schema.core :as s]
+   [onyx.job :refer [add-task]]
+   [twit.tasks.twitter :as tweet]
+   [twit.tasks.segment :as segment-tasks]
+   [onyx.tasks.twitter :as twitter-plugin-tasks]
+   [lib-onyx.migrations.sql :as sql-middleware]
+   [onyx.tasks.core-async :as core-async-task]))
 
 (defn build-job
   [twitter-config joplin-config batch-size batch-timeout]
@@ -22,14 +26,12 @@
     (-> base-job
         (add-task (twitter-plugin-tasks/stream :in (merge batch-settings twitter-config)))
         (add-task (segment-tasks/filter-keypath :in :all [:tweet :place :country-code]))
-        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info
-                                                         {:text [:tweet :text]
-                                                          :user [:tweet :user :name]
-                                                          :created-at [:tweet :created-at]
-                                                          :country [:tweet :place :country-code]
-                                                          :id [:tweet :id]} batch-settings))
+        (add-task (segment-tasks/transform-segment-shape :extract-tweet-info {:text [:tweet :text]
+                                                                              :user [:tweet :user :name]
+                                                                              :created-at [:tweet :created-at]
+                                                                              :country [:tweet :place :country-code]
+                                                                              :id [:tweet :id]} batch-settings))
         (add-task (tweet/add-emoji-count :count-emojis [:text] [:emoji-count] batch-settings))
-        (add-task (tweet/emojiscore-by-country :bucket-emojis
-                                               joplin-config
-                                               batch-settings))
+        (add-task (tweet/window-emojiscore-by-country :bucket-emojis batch-settings)
+                  (sql-middleware/with-joplin-migrations :dev joplin-config))
         (add-task (core-async-task/output :out batch-settings)))))
