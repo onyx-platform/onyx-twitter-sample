@@ -36,17 +36,15 @@
   (let [joplin-env (get-in event [:onyx.core/task-map :joplin/environment])
         joplin-uri (get-in event [:onyx.core/task-map :joplin/config :environments joplin-env 0 :db :url])]
     (assert joplin-uri "Could not find a joplin-url in the task map")
-    (when (and (:average state)
-               (not (zero? (:average state))))
-      (let [row {:CountryCode group-key
-                 :TotalTweets (int (:sum state))
-                 :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
-                 :AverageEmojis (int (:average state))}]
-        (upsert! {:connection-uri joplin-uri}
-                 :EmojiRank
-                 row
-                 {:TotalTweets   (int (:sum state))
-                  :AverageEmojis (int (:average state))})))))
+    (let [row {:CountryCode (or group-key "Unknown")
+               :TotalTweets (int (:n state))
+               :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
+               :AverageEmojis (int (:average state))}]
+      (upsert! {:connection-uri joplin-uri}
+               :EmojiRank
+               row
+               {:TotalTweets   (int (:n state))
+                :AverageEmojis (int (:average state))}))))
 
 (defn count-emojis
   [keypath resultpath segment]
@@ -88,6 +86,6 @@
                       :window/aggregation [:onyx.windowing.aggregation/average :emoji-count]}]
            :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
                        :trigger/refinement :onyx.refinements/accumulating
-                       :trigger/on :onyx.triggers/timer
-                       :trigger/period [10 :seconds]
+                       :trigger/on :onyx.triggers/segment
+                       :trigger/threshold [15 :elements]
                        :trigger/sync ::sync-to-sql}]}}))
