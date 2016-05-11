@@ -9,7 +9,7 @@
             [schema.core :as s]
             [twit.tasks
              [math :as math]
-             [reshape :as segment-tasks]
+             [reshape :as reshape]
              [twitter :as tweet]]))
 
 (defn build-job
@@ -27,8 +27,7 @@
                   :task-scheduler :onyx.task-scheduler/balanced}]
     (-> base-job
         (add-task (twitter-plugin-tasks/stream :in (merge batch-settings twitter-config)))
-        (add-task (segment-tasks/filter-keypath :in :all [:tweet :place :country-code]))
-        (add-task (segment-tasks/transform-segment-shape
+        (add-task (reshape/transform-segment-shape
                    :extract-tweet-info {:text [:tweet :text]
                                         :user [:tweet :user :name]
                                         :created-at [:tweet :created-at]
