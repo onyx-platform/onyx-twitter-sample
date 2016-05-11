@@ -1,5 +1,6 @@
-(ns twit.tasks.segment
-  (:require [clojure.walk :refer [postwalk]]))
+(ns twit.tasks.reshape
+  (:require [clojure.walk :refer [postwalk]]
+            [schema.core :as s]))
 
 (defn transform-shape
   "Recursively restructures a segment {:new-key [paths...]}"
@@ -13,7 +14,14 @@
          segment)))
 
 (defn transform-segment-shape
-  "Recursively restructures a segment {:new-key [paths...]}"
+  "Recursively restructure a segment, like select-keys but with get-in style
+  key paths.
+
+  {:name [:user :name]}
+  applied to
+  {:user {:name 'gardner'}}
+  would result in
+  {:name 'gardner'}"
   [task-name paths task-opts]
   {:task {:task-map (merge {:onyx/name task-name
                             :onyx/type :function
@@ -26,16 +34,13 @@
   (get-in new-segment keypath nil))
 
 (defn filter-keypath
-  "Filter out segments where keypath is either nil or does not exist"
+  "Filters segments that have a value (located at keypath) nil for
+  a specific graph edge (from->to)"
   [from to keypath]
-  {:task {:task-map {:onyx/name :_notused
-                     :onyx/type :function
-                     :onyx/fn :clojure.core/identity
-                     :onyx/batch-size 1
-                     :onyx/batch-timeout 1}
-          :flow-conditions [{:flow/from from
+  {:task {:flow-conditions [{:flow/from from
                              :flow/to to
                              :flow/short-circuit? (or (= :all to)
                                                       (= :none to))
                              ::keypath keypath
-                             :flow/predicate [::filter-keypath-pred ::keypath]}]}})
+                             :flow/predicate [::filter-keypath-pred ::keypath]}]}
+   :schema {:flow-conditions [{::keypath [s/Any]}]}})
