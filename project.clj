@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.onyxplatform/onyx "0.9.6"] ;; <<<<<<<<< ADDED THIS
-                 [org.onyxplatform/lib-onyx "0.9.0.0"]
+                 [org.onyxplatform/onyx "0.9.7-SNAPSHOT"]
+                 [org.onyxplatform/lib-onyx "0.9.0.1-SNAPSHOT"]
                  [honeysql "0.6.3"]
                  [mysql/mysql-connector-java "5.1.38"]
                  [org.clojure/java.jdbc "0.4.2"]

@@ -7,7 +7,7 @@
    [twit.tasks.twitter :as tweet]
    [twit.tasks.segment :as segment-tasks]
    [onyx.tasks.twitter :as twitter-plugin-tasks]
-   [lib-onyx.migrations.sql :as sql-middleware]
+   [lib-onyx.joplin :as joplin]
    [onyx.tasks.core-async :as core-async-task]))
 
 (defn build-job
@@ -33,5 +33,5 @@
                                                                               :id [:tweet :id]} batch-settings))
         (add-task (tweet/add-emoji-count :count-emojis [:text] [:emoji-count] batch-settings))
         (add-task (tweet/window-emojiscore-by-country :bucket-emojis batch-settings)
-                  (sql-middleware/with-joplin-migrations :dev joplin-config))
+                  (joplin/with-joplin-migrations :dev joplin-config))
         (add-task (core-async-task/output :out batch-settings)))))
