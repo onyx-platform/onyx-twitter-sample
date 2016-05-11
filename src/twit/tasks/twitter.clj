@@ -1,50 +1,6 @@
 (ns twit.tasks.twitter
   (:require [schema.core :as s]
-            [onyx.schema :as os]
-            [clojure.java.jdbc :as j]
-            [taoensso.timbre :refer [info warn]]
-            [honeysql.core :as sql]
-            [honeysql.helpers :as helpers]
-            [clojure.java.io :as io]
-            [schema.core :as s]
-            [clojure.java.jdbc :as jdbc])
-  (:import [java.text SimpleDateFormat]))
-
-(defn upsert-sql
-  [table columns updates]
-  (let [updates (map (fn [[column value]]
-                       (str (name column) " = " value))
-                     updates)]
-    (str "INSERT INTO " (name table) " "
-         "(" (clojure.string/join ", " (map name columns)) ") "
-         "VALUES (" (clojure.string/join ", " (repeat (count columns) "?")) ") "
-         (when (seq updates)
-           (str "ON DUPLICATE KEY UPDATE "
-                (clojure.string/join ", " updates))))))
-
-(defn upsert!
-  "Some function I got online to do mysql upserts"
-  ([db table values updates]
-   (upsert! db table (keys values) [(vals values)] updates))
-  ([db table columns rows updates]
-   (when (seq rows)
-     (let [sql (upsert-sql table columns updates)]
-       (apply jdbc/db-do-prepared db false sql rows)))))
-
-(defn sync-to-sql
-  [event window trigger {:keys [group-key trigger-update] :as state-event} state]
-  (let [joplin-env (get-in event [:onyx.core/task-map :joplin/environment])
-        joplin-uri (get-in event [:onyx.core/task-map :joplin/config :environments joplin-env 0 :db :url])]
-    (assert joplin-uri "Could not find a joplin-url in the task map")
-    (let [row {:CountryCode (or group-key "Unknown")
-               :TotalTweets (int (:n state))
-               :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
-               :AverageEmojis (int (:average state))}]
-      (upsert! {:connection-uri joplin-uri}
-               :EmojiRank
-               row
-               {:TotalTweets   (int (:n state))
-                :AverageEmojis (int (:average state))}))))
+            [twit.persist.sql :refer [upsert-emojicount]]))
 
 (defn count-emojis
   [keypath resultpath segment]
@@ -68,6 +24,31 @@
    :schema {:task-map {::emoji-string [s/Any]
                        ::result-path [s/Any]}}})
 
+(defn split-on-hashtags
+  "Splits segments into multiple segments containing an original hashtag,
+  the literal hash of the original tweet id and the hashtag, and the original
+  tweet-id"
+  [id-ks text-ks segment]
+  (let [matcher (partial re-seq #"\S*#(?:\[[^\]]+\]|\S+)")
+        created-at (get segment :created-at (java.util.Date.))
+        id (get-in segment id-ks)]
+    (mapv (fn [hashtag]
+            (assoc {:id (hash (str hashtag id))
+                    :tweet-id id
+                    :created-at created-at} :hashtag hashtag)) (matcher (get-in segment text-ks)))))
+
+(defn emit-hashtag-ids
+  "Splits a tweet into individual hashtags with a common id, and a tweet id"
+  [task-name id-ks text-ks task-opts]
+  {:task {:task-map (merge {:onyx/name task-name
+                            :onyx/type :function
+                            :onyx/fn ::split-on-hashtags
+                            ::arg1 id-ks
+                            ::arg2 text-ks
+                            :onyx/params [::arg1 ::arg2]} task-opts)}
+   :schema {:task-map {::arg1 [s/Any]
+                       ::arg2 [s/Any]}}})
+
 (defn window-emojiscore-by-country
   ([task-name task-opts]
    {:task {:task-map (merge {:onyx/name task-name
@@ -87,5 +68,27 @@
            :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
                        :trigger/refinement :onyx.refinements/accumulating
                        :trigger/on :onyx.triggers/segment
-                       :trigger/threshold [15 :elements]
-                       :trigger/sync ::sync-to-sql}]}}))
+                       :trigger/threshold [5 :elements]
+                       :trigger/sync :twit.persist.sql/upsert-emojicount}]}}))
+
+(defn window-trending-hashtags
+  ([task-name task-opts]
+   {:task {:task-map (merge {:onyx/name task-name
+                             :onyx/type :function
+                             :onyx/group-by-key :hashtag
+                             :onyx/flux-policy :continue
+                             :onyx/uniqueness-key :id
+                             :onyx/min-peers 1
+                             :onyx/max-peers 1
+                             :onyx/fn :clojure.core/identity}
+                            task-opts)
+           :windows [{:window/id (keyword (str task-name "-" "window"))
+                      :window/task task-name
+                      :window/type :global
+                      :window/window-key :created-at
+                      :window/aggregation :onyx.windowing.aggregation/count}]
+           :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
+                       :trigger/refinement :onyx.refinements/accumulating
+                       :trigger/on :onyx.triggers/segment
+                       :trigger/threshold [20 :elements]
+                       :trigger/sync :twit.persist.sql/upsert-trending}]}}))
