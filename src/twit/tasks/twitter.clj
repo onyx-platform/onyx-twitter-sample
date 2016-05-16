@@ -1,28 +1,25 @@
 (ns twit.tasks.twitter
-  (:require [schema.core :as s]
-            [twit.persist.sql :refer [upsert-emojicount]]))
+  (:require [schema.core :as s]))
 
 (defn count-emojis
-  [keypath resultpath segment]
+  [text-ks segment]
   (let [emoji-count
         (reduce (fn [acc char]
                   (if (<= (int Character/MIN_SURROGATE) (int char) (int Character/MAX_SURROGATE))
                     (inc acc)
-                    acc)) 0 (get-in segment keypath))]
-    (assoc-in segment resultpath emoji-count)))
+                    acc)) 0 (get-in segment text-ks))]
+    (assoc-in segment [:emoji-count] emoji-count)))
 
-(defn add-emoji-count
+(defn count-emoji
   "Counts the emojis located at the emoji-string path and assoc's the counts to the result-path"
-  [task-name keypath resultpath task-opts]
+  [task-name text-ks task-opts]
   {:task {:task-map (merge {:onyx/name task-name
                             :onyx/type :function
                             :onyx/fn ::count-emojis
-                            ::emoji-string keypath
-                            ::result-path resultpath
-                            :onyx/params [::emoji-string ::result-path]}
+                            ::text-ks text-ks
+                            :onyx/params [::text-ks]}
                            task-opts)}
-   :schema {:task-map {::emoji-string [s/Any]
-                       ::result-path [s/Any]}}})
+   :schema {:task-map {::text-ks [s/Any]}}})
 
 (defn split-on-hashtags
   "Splits segments into multiple segments containing an original hashtag,
@@ -49,7 +46,7 @@
    :schema {:task-map {::arg1 [s/Any]
                        ::arg2 [s/Any]}}})
 
-(defn window-emojiscore-by-country
+(defn update-emojiscore
   ([task-name task-opts]
    {:task {:task-map (merge {:onyx/name task-name
                              :onyx/type :function
@@ -90,5 +87,5 @@
            :triggers [{:trigger/window-id (keyword (str task-name "-" "window"))
                        :trigger/refinement :onyx.refinements/accumulating
                        :trigger/on :onyx.triggers/segment
-                       :trigger/threshold [20 :elements]
+                       :trigger/threshold [10 :elements]
                        :trigger/sync :twit.persist.sql/upsert-trending}]}}))

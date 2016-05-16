@@ -11,7 +11,7 @@
               [k v]))]
     (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) paths)))
 
-(defn transform-segment-shape
+(defn reshape-segment
   "Recursively restructure a segment, like select-keys but with get-in style
   key paths.
 

@@ -16,7 +16,7 @@
     (let [{:keys [env-config
                   peer-config
                   twitter-config
-                  joplin-config]} (read-config (io/resource "config.edn") {:transforms [:path :path]})
+                  joplin-config]} (read-config (io/resource "config.edn"))
           job (twit.jobs.emojiscore/build-job twitter-config joplin-config 1 1000)
           {:keys [in out]} (get-core-async-channels job)]
       (with-test-env [test-env [8 env-config peer-config]]
@@ -25,5 +25,3 @@
         (loop [tweet (<!! out)]
           (recur (<!! out)))
         (is (<!! out))))))
-
-;(:text :user :created-at :country :id :emoji-count)
