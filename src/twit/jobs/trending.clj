@@ -14,12 +14,10 @@
    :created-at [:createdAt :time]})
 
 (defn build-job
-  [twitter-config joplin-config batch-size batch-timeout]
-  (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
-        base-job {:workflow [[:in :reshape-segment]
+  [twitter-config joplin-config batch-settings]
+  (let [base-job {:workflow [[:in :reshape-segment]
                              [:reshape-segment :split-hashtags]
-                             [:split-hashtags :trending-view]
-                             [:trending-view :out]]
+                             [:split-hashtags :out]]
                   :catalog []
                   :lifecycles []
                   :windows []
@@ -29,13 +27,13 @@
     (-> base-job
         (add-task
          (twitter/stream :in [:id :text :createdAt]
-                                      (merge batch-settings twitter-config)))
+                         (merge batch-settings twitter-config)))
         (add-task
          (reshape/reshape-segment :reshape-segment reshape-segment batch-settings))
         (add-task
          (tweet/emit-hashtag-ids :split-hashtags [:id] [:text] batch-settings))
         (add-task
-         (tweet/window-trending-hashtags :trending-view batch-settings)
-         (joplin/with-joplin-migrations :dev joplin-config))
-        (add-task
-         (core-async-task/output :out batch-settings)))))
+         (core-async-task/output :out batch-settings)
+         (tweet/with-counting-hashtags :trending-hashtags)
+         (tweet/with-syncing-to-sql :trending-hashtags)
+         (joplin/with-joplin-migrations :dev joplin-config)))))

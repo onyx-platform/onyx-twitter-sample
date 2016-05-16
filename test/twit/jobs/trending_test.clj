@@ -9,15 +9,16 @@
             [clojure.test :refer [is testing deftest]]
             [clojure.java.io :as io]
             [joplin.jdbc.database]
+            [twit.persist.sql]
             [onyx.api]))
 
 (deftest trending-test
   (testing "We can get trending view"
-    (let [{:keys [env-config
-                  peer-config
-                  twitter-config
-                  joplin-config]} (read-config (io/resource "config.edn"))
-          job (twit.jobs.trending/build-job twitter-config joplin-config 1 1000)
+    (let [{:keys [env-config peer-config twitter-config joplin-config]} (read-config (io/resource "config.edn"))
+          job (twit.jobs.trending/build-job twitter-config
+                                            joplin-config
+                                            {:onyx/batch-size 1
+                                             :onyx/batch-timeout 1000})
           {:keys [in out]} (get-core-async-channels job)]
       (with-test-env [test-env [10 env-config peer-config]]
         (onyx.test-helper/validate-enough-peers! test-env job)

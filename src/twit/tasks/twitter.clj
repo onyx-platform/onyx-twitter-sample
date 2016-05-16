@@ -69,7 +69,9 @@
                        :trigger/sync :twit.persist.sql/upsert-emojicount}]}}))
 
 (defn window-trending-hashtags
-  ([task-name task-opts]
+  ([task-name task-opts] (window-trending-hashtags
+                          task-name :twit.persist.sql/upsert-trending task-opts))
+  ([task-name sync-fn task-opts]
    {:task {:task-map (merge {:onyx/name task-name
                              :onyx/type :function
                              :onyx/group-by-key :hashtag
@@ -89,3 +91,27 @@
                        :trigger/on :onyx.triggers/segment
                        :trigger/threshold [10 :elements]
                        :trigger/sync :twit.persist.sql/upsert-trending}]}}))
+
+(defn with-counting-hashtags
+  [window-id]
+  (fn [task-definition]
+    (let [task-name (get-in task-definition [:task :task-map :onyx/name])]
+      (-> task-definition
+          (assoc-in [:task :task-map :onyx/group-by-key] :hashtag)
+          (assoc-in [:task :task-map :onyx/flux-policy] :continue)
+          (assoc-in [:task :task-map :onyx/uniqueness-key] :id)
+          (update-in [:task :windows] conj {:window/id window-id
+                                            :window/task task-name
+                                            :window/type :global
+                                            :window/window-key :created-at
+                                            :window/aggregation :onyx.windowing.aggregation/count})))))
+
+(defn with-syncing-to-sql
+  [window-id]
+  (fn [task-definition]
+    (-> task-definition
+        (update-in [:task :triggers] conj {:trigger/window-id window-id
+                                           :trigger/refinement :onyx.refinements/accumulating
+                                           :trigger/on :onyx.triggers/segment
+                                           :trigger/threshold [10 :elements]
+                                           :trigger/sync :twit.persist.sql/upsert-trending}))))
