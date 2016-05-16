@@ -3,7 +3,7 @@
             [onyx.job :refer [add-task]]
             [onyx.tasks
              [core-async :as core-async-task]
-             [twitter :as twitter-plugin-tasks]]
+             [twitter :as twitter]]
             [twit.tasks
              [reshape :as reshape]
              [twitter :as tweet]]))
@@ -27,17 +27,15 @@
                   :flow-conditions []
                   :task-scheduler :onyx.task-scheduler/balanced}]
     (-> base-job
-        (add-task (twitter-plugin-tasks/stream :in
-                                               [:id :text :createdAt]
-                                               (merge batch-settings twitter-config)))
-        (add-task (reshape/reshape-segment :reshape-segment
-                                                   reshape-segment
-                                                   batch-settings))
-        (add-task (tweet/emit-hashtag-ids :split-hashtags
-                                          [:id]
-                                          [:text]
-                                          batch-settings))
-        (add-task (tweet/window-trending-hashtags :trending-view
-                                                  batch-settings)
-                  (joplin/with-joplin-migrations :dev joplin-config))
-        (add-task (core-async-task/output :out batch-settings)))))
+        (add-task
+         (twitter/stream :in [:id :text :createdAt]
+                                      (merge batch-settings twitter-config)))
+        (add-task
+         (reshape/reshape-segment :reshape-segment reshape-segment batch-settings))
+        (add-task
+         (tweet/emit-hashtag-ids :split-hashtags [:id] [:text] batch-settings))
+        (add-task
+         (tweet/window-trending-hashtags :trending-view batch-settings)
+         (joplin/with-joplin-migrations :dev joplin-config))
+        (add-task
+         (core-async-task/output :out batch-settings)))))
