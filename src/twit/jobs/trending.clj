@@ -36,32 +36,34 @@
 
 (defn add-test-leafs
   [job twitter-config batch-settings]
-  (-> job
-      (add-task
-       #_(twitter/stream :in [:id :text :createdAt]
-                         (merge batch-settings twitter-config))
-       (core-async-task/input :in batch-settings))
-      (add-task
-       (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
-                                                           :onyx/flux-policy :recover
-                                                           :onyx/min-peers 1
-                                                           :onyx/max-peers 1
-                                                           :onyx/uniqueness-key :id}))
-       (tweet/with-syncing-to-atom :hashtag-window :test-atom))))
+  (let [aggregation-settings
+        {:onyx/group-by-key :hashtag
+         :onyx/flux-policy :recover
+         :onyx/min-peers 1
+         :onyx/max-peers 1
+         :onyx/uniqueness-key :id}]
+    (-> job
+        (add-task
+         (core-async-task/input :in batch-settings))
+        (add-task
+         (core-async-task/output :out (merge batch-settings aggregation-settings))
+         (tweet/with-syncing-to-atom :hashtag-window :test-atom)))))
 
 (defn add-prod-leafs
   "Adds leaf and root nodes for a production workflow. In this case,
   SQL output and twitter stream input."
   [job twitter-config joplin-config batch-settings]
-  (-> job
-      (add-task
-       (twitter/stream :in [:id :text :createdAt]
-                       (merge batch-settings twitter-config)))
-      (add-task
-       (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
-                                                           :onyx/flux-policy :recover
-                                                           :onyx/min-peers 1
-                                                           :onyx/max-peers 1
-                                                           :onyx/uniqueness-key :id}))
-       (tweet/with-syncing-to-sql :hashtag-window (get-in joplin-config [:environments :dev 0 :db :url]))
-       (joplin/with-joplin-migrations :dev joplin-config))))
+  (let [aggregation-settings
+        {:onyx/group-by-key :hashtag
+         :onyx/flux-policy :recover
+         :onyx/min-peers 1
+         :onyx/max-peers 1
+         :onyx/uniqueness-key :id}]
+    (-> job
+        (add-task
+         (twitter/stream :in [:id :text :createdAt]
+                         (merge batch-settings twitter-config)))
+        (add-task
+         (core-async-task/output :out (merge batch-settings aggregation-settings))
+         (tweet/with-syncing-to-sql :hashtag-window (get-in joplin-config [:environments :dev 0 :db :url]))
+         (joplin/with-joplin-migrations :dev joplin-config)))))
