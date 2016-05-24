@@ -24,28 +24,24 @@
 
 (defn upsert-emojicount
   [event window trigger {:keys [group-key trigger-update] :as state-event} state]
-  (let [joplin-env (get-in event [:onyx.core/task-map :joplin/environment])
-        joplin-uri (get-in event [:onyx.core/task-map :joplin/config :environments joplin-env 0 :db :url])]
-    (let [row {:CountryCode (or group-key "Unknown")
-               :TotalTweets (int (:n state))
-               :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
-               :AverageEmojis (int (:average state))}]
-      (upsert! {:connection-uri joplin-uri}
-               :EmojiRank
-               row
-               {:TotalTweets   (int (:n state))
-                :AverageEmojis (int (:average state))}))))
+  (let [{:keys [sql/connection-uri]} trigger
+        row {:CountryCode (or group-key "Unknown")
+             :TotalTweets (int (:n state))
+             :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
+             :AverageEmojis (int (:average state))}]
+    (upsert! connection-uri
+             :EmojiRank
+             row
+             {:TotalTweets   (int (:n state))
+              :AverageEmojis (int (:average state))})))
 
 (defn upsert-trending
   [event window trigger {:keys [group-key trigger-update] :as state-event} state]
-  (let [joplin-env (get-in event [:onyx.core/task-map :joplin/environment])
-        joplin-uri (get-in event [:onyx.core/task-map :joplin/config :environments joplin-env 0 :db :url])]
-    (let [row {:hashtag (or group-key "none")
-               :score state
-               :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))}]
-      (upsert! {:connection-uri joplin-uri}
-               :Trending
-               row
-               {:score state
-                ;:timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
-                }))))
+  (let [{:keys [sql/connection-uri]} trigger
+        row {:hashtag (or group-key "none")
+             :score state
+             :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))}]
+    (upsert! connection-uri
+             :Trending
+             row
+             {:score state})))

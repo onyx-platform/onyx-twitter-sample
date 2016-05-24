@@ -42,3 +42,12 @@
                              ::keypath keypath
                              :flow/predicate [::filter-keypath-pred ::keypath]}]}
    :schema {:flow-conditions [{::keypath [s/Any]}]}})
+
+(defn task-substrate
+  "clojure.core/identity task that can be used as a substrate for
+  things windows or lifecycles."
+  [task-name task-opts]
+  {:task {:task-map (merge {:onyx/name task-name
+                            :onyx/type :function
+                            :onyx/fn :clojure.core/identity}
+                           task-opts)}})

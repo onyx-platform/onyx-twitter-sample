@@ -13,7 +13,7 @@
   :zookeeper/address "127.0.0.1:2188"
   :onyx.peer/job-scheduler :onyx.job-scheduler/greedy
   :onyx.peer/zookeeper-timeout 60000
-  :onyx.messaging/allow-short-circuit? false
+  :onyx.messaging/allow-short-circuit? true
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr "localhost"
   :onyx.messaging/peer-port 40200
