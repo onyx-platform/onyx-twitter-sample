@@ -35,7 +35,7 @@
          (tweet/window-trending-hashtags :out :hashtag-window)))))
 
 (defn add-test-leafs
-  [job twitter-config batch-settings]
+  [job batch-settings]
   (let [aggregation-settings
         {:onyx/group-by-key :hashtag
          :onyx/flux-policy :recover
