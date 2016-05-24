@@ -15,7 +15,11 @@
 (def input
   (conj (mapv (fn [id]
                 {:id id :text "Hello #world"
-                 :createdAt (java.util.Date.)}) (range 10)) :done))
+                 :createdAt (java.util.Date.)}) (range 10))
+        (mapv (fn [id]
+                {:id id :text "Not #trending"
+                 :createdAt (java.util.Date.)}) (range 1))
+        :done))
 
 (deftest trending-test
   (testing "We can get trending view"
@@ -31,4 +35,5 @@
         (onyx.test-helper/validate-enough-peers! test-env job)
         (onyx.api/submit-job peer-config job)
         (take-segments! out)
-        (is (= 10 (get-in @test-atom [window-range "#world"])))))))
+        (is (= 10 (get-in @test-atom [window-range "#world"])))
+        (is (nil? (get-in @test-atom [window-range "#trending"])))))))
