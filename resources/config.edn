@@ -19,10 +19,10 @@
   :onyx.messaging/peer-port 40200
   :onyx.messaging.aeron/embedded-driver? true}
  :twitter-config
- {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY ***REMOVED***]
-  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET ***REMOVED***]
-  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN ***REMOVED***]
-  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET ***REMOVED***]}
+ {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY]
+  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
+  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN]
+  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET]}
  :joplin-config
  {:databases {:sql {:type :sql
                     :url "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"
