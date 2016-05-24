@@ -34,7 +34,7 @@
                      :window/window-key :created-at
                      :window/aggregation :onyx.windowing.aggregation/count}]}})
 
-(defn with-syncing-to-sql
+(defn with-trigger-to-sql
   [window-id connection-uri]
   (fn [task-definition]
     (-> task-definition
@@ -46,7 +46,7 @@
                     :sql/connection-uri {:connection-uri connection-uri}
                     :trigger/sync :twit.persist.sql/upsert-trending}))))
 
-(defn with-syncing-to-atom
+(defn with-trigger-to-atom
   [window-id atom-id]
   (fn [task-definition]
     (let [task-name (get-in task-definition [:task :task-map :onyx/name])]
