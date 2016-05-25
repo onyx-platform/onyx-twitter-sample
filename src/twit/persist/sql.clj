@@ -22,25 +22,13 @@
      (let [sql (upsert-sql table columns updates)]
        (apply jdbc/db-do-prepared db false sql rows)))))
 
-(defn upsert-emojicount
-  [event window trigger {:keys [group-key trigger-update] :as state-event} state]
-  (let [{:keys [sql/connection-uri]} trigger
-        row {:CountryCode (or group-key "Unknown")
-             :TotalTweets (int (:n state))
-             :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))
-             :AverageEmojis (int (:average state))}]
-    (upsert! connection-uri
-             :EmojiRank
-             row
-             {:TotalTweets   (int (:n state))
-              :AverageEmojis (int (:average state))})))
-
 (defn upsert-trending
   [event window trigger {:keys [group-key trigger-update] :as state-event} state]
   (let [{:keys [sql/connection-uri]} trigger
         row {:hashtag (or group-key "none")
              :score state
              :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))}]
+    (assert connection-uri "connection-uri not specified")
     (upsert! connection-uri
              :Trending
              row

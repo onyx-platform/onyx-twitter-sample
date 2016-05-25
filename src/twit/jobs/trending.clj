@@ -14,8 +14,14 @@
    :created-at [:createdAt :time]})
 
 (defn trending-hashtags-job
-  "Emit the transform parts of the job, steps that do not change between
-  test or production modes."
+  "Builds up the initial job skeleton. Note that while we provide
+  task bundles for :reshape-segment, :split-hashtags, and :out.
+  All of these task bundles deal with either pure data transformations,
+  or in the case of window-trending-hashtags, a windowing aggregation.
+  None of them specify a data sink or :trigger/sync target.
+
+  This is to allow us to specify those later, depending on what kind of
+  durable storage we want to use."
   [batch-settings]
   (let [base-job {:workflow [[:in :reshape-segment]
                              [:reshape-segment :split-hashtags]
@@ -32,6 +38,9 @@
         (add-task (tweet/window-trending-hashtags :out :hashtag-window)))))
 
 (defn add-test-leafs
+  "Picking up where trending-hashtags-job left off, we add the root and 'leafs'
+  to the graph for a testing environment. This is a core-async input and output
+  channel, and a plain old atom as our :trigger/sync target."
   [job batch-settings]
   (let [aggregation-settings
         {:onyx/group-by-key :hashtag
@@ -45,8 +54,11 @@
                   (tweet/with-trigger-to-atom :hashtag-window :test-atom)))))
 
 (defn add-prod-leafs
-  "Adds leaf and root nodes for a production workflow. In this case,
-  SQL output and twitter stream input."
+  "Picking up where trending-hashtags-job left off, we add the root and 'leafs'
+  to the graph for a production environment. This is input from the actual live
+  twitter stream, a core-async output channel (since we dont care about
+  the workflow output, just the :trigger/sync) and a :trigger/sync sending
+  data to MySQL."
   [job twitter-config joplin-config batch-settings]
   (let [connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
     (-> job

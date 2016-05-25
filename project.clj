@@ -14,5 +14,4 @@
                  [aero "1.0.0-beta2"]
                  [org.onyxplatform/onyx-twitter "0.9.0.0-SNAPSHOT"]]
   :profiles {:dev {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
-                   :dependencies []
                    :source-paths ["src"]}})
