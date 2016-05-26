@@ -42,7 +42,7 @@
                    {:trigger/window-id window-id
                     :trigger/refinement :onyx.refinements/accumulating
                     :trigger/on :onyx.triggers/segment
-                    :trigger/threshold [1 :elements]
+                    :trigger/threshold [5 :elements]
                     :sql/connection-uri {:connection-uri connection-uri}
                     :trigger/sync :twit.persist.sql/upsert-trending}))))
 

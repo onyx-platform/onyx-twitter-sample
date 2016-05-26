@@ -6,8 +6,17 @@ peer:
   shm_size: "256mb"
   links:
     - zookeeper:zookeeper
+    - mysql:mysql
 
 zookeeper:
   image: 'wurstmeister/zookeeper'
   ports:
     - '2181:2181'
+
+mysql:
+  image: 'tutum/mysql'
+  ports:
+    - '3306:3306'
+  environment:
+    ON_CREATE_DB: "onyx"
+    MYSQL_PASS: "mypass"

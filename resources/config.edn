@@ -35,7 +35,8 @@
   :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET "AmFKtxYw7bbWcrFFeINSQ26dlrO2nUm0BvZ9mBt043hT2"]}
  :joplin-config
  {:databases {:sql {:type :sql
-                    :url "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"
+                    :url #profile{:default "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"
+                                  :docker "jdbc:mysql://mysql:3306/onyx?user=admin&password=mypass"}
                     :migrations-table "ragtime_migrations"}}
   :migrators {:sql-migrator "resources/migrators/sql"}
   :environments {:dev [{:db ^:ref [:joplin-config :databases :sql]
