@@ -1,32 +1,38 @@
 {:env-config
- {:onyx/tenancy-id "1"
+ {:onyx/tenancy-id #profile {:default "1"
+                             :docker #env ONYX_ID}
   :onyx.bookkeeper/server? true
   :onyx.bookkeeper/local-quorum? true
   :onyx.bookkeeper/delete-server-data? true
   :onyx.bookkeeper/local-quorum-ports [3196 3197 3198]
   :onyx.bookkeeper/port 3196
-  :zookeeper/address "127.0.0.1:2188"
-  :zookeeper/server? true
-  :zookeeper.server/port 2188
-  :onyx.log/config {}
-  }
+  :zookeeper/address #profile {:default "127.0.0.1:2181"
+                               :docker "zookeeper:2181"}
+  :zookeeper/server? #profile {:default true
+                               :docker false}
+  :zookeeper.server/port 2181
+  :onyx.log/config #profile {:default nil
+                             :docker {:level :info}}}
  :peer-config
- {:onyx/tenancy-id "1"
-  :zookeeper/address "127.0.0.1:2188"
+ {:onyx/tenancy-id #profile {:default "1"
+                             :docker #env ONYX_ID}
+  :zookeeper/address #profile {:default "127.0.0.1:2181"
+                               :docker "zookeeper:2181"}
   :onyx.peer/job-scheduler :onyx.job-scheduler/greedy
   :onyx.peer/zookeeper-timeout 60000
   :onyx.messaging/allow-short-circuit? false
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr "localhost"
   :onyx.messaging/peer-port 40200
-  :onyx.messaging.aeron/embedded-driver? false
-  :onyx.log/config {}
-  }
+  :onyx.messaging.aeron/embedded-driver? #profile {:default true
+                                                   :docker false}
+  :onyx.log/config #profile {:default nil
+                             :docker {:level :info}}}
  :twitter-config
- {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY ]
-  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
-  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN ]
-  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET]}
+ {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KE"XMR3M78jj4A74WUVOR9GVYMmX"]
+  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET "RdCOhEIQVa08ewUWOgELpgWjJXOiQiPjYkXVKep28gk9zUjMNR"]
+  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN "3191952868-N6VzkTyHXexyxzG3G58T6qWsXLBDEjyyqSwJ9M5"]
+  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET "AmFKtxYw7bbWcrFFeINSQ26dlrO2nUm0BvZ9mBt043hT2"]}
  :joplin-config
  {:databases {:sql {:type :sql
                     :url "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"

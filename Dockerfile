@@ -13,5 +13,7 @@ ADD scripts/run_peer.sh /opt/run_peer.sh
 ADD target/peer.jar /opt/peer.jar
 
 ENTRYPOINT ["/init"]
+EXPOSE 3196 3197 3198 40200
+EXPOSE 40200/udp
 
 CMD ["opt/run_peer.sh"]

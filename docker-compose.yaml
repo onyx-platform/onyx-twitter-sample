@@ -1,0 +1,13 @@
+peer:
+  #build: .
+  image: beer
+  environment:
+    ONYX_ID: 1
+  shm_size: "256mb"
+  links:
+    - zookeeper:zookeeper
+
+zookeeper:
+  image: 'wurstmeister/zookeeper'
+  ports:
+    - '2181:2181'
