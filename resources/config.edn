@@ -7,7 +7,9 @@
   :onyx.bookkeeper/port 3196
   :zookeeper/address "127.0.0.1:2188"
   :zookeeper/server? true
-  :zookeeper.server/port 2188}
+  :zookeeper.server/port 2188
+  :onyx.log/config {}
+  }
  :peer-config
  {:onyx/tenancy-id "1"
   :zookeeper/address "127.0.0.1:2188"
@@ -17,11 +19,13 @@
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr "localhost"
   :onyx.messaging/peer-port 40200
-  :onyx.messaging.aeron/embedded-driver? true}
+  :onyx.messaging.aeron/embedded-driver? false
+  :onyx.log/config {}
+  }
  :twitter-config
- {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY]
+ {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY ]
   :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
-  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN]
+  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN ]
   :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET]}
  :joplin-config
  {:databases {:sql {:type :sql
