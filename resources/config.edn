@@ -29,10 +29,10 @@
   :onyx.log/config #profile {:default nil
                              :docker {:level :info}}}
  :twitter-config
- {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KE"XMR3M78jj4A74WUVOR9GVYMmX"]
-  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET "RdCOhEIQVa08ewUWOgELpgWjJXOiQiPjYkXVKep28gk9zUjMNR"]
-  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN "3191952868-N6VzkTyHXexyxzG3G58T6qWsXLBDEjyyqSwJ9M5"]
-  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET "AmFKtxYw7bbWcrFFeINSQ26dlrO2nUm0BvZ9mBt043hT2"]}
+ {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY]
+  :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
+  :twitter/access-token #or [#env TWITTER_ACCESS_TOKEN]
+  :twitter/access-secret #or [#env TWITTER_ACCESS_SECRET]}
  :joplin-config
  {:databases {:sql {:type :sql
                     :url #profile{:default "jdbc:mysql://192.168.99.100:3306/onyx?user=admin&password=mypass"

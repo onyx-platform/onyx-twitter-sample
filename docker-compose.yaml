@@ -1,9 +1,9 @@
 peer:
-  #build: .
-  image: beer
+  image: peerimage
   environment:
     ONYX_ID: 1
-  shm_size: "256mb"
+    NPEERS: 8
+  shm_size: "512mb"
   links:
     - zookeeper:zookeeper
     - mysql:mysql

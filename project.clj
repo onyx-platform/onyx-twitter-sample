@@ -12,9 +12,10 @@
                  [joplin.core "0.3.6"]
                  [joplin.jdbc "0.3.6"]
                  [aero "1.0.0-beta2"]
-                 [org.onyxplatform/onyx-twitter "0.9.0.0-SNAPSHOT"]]
+                 [org.onyxplatform/onyx-twitter "0.9.0.1-SNAPSHOT"]]
   :profiles {:dev {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src"]}
              :uberjar {:aot [lib-onyx.media-driver
-                             twit.start]
+                             twit.start-peer
+                             twit.jobs]
                        :uberjar-name "peer.jar"}})
