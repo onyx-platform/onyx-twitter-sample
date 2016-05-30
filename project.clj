@@ -17,5 +17,5 @@
                    :source-paths ["src"]}
              :uberjar {:aot [lib-onyx.media-driver
                              twit.start-peer
-                             twit.jobs]
+                             twit.core]
                        :uberjar-name "peer.jar"}})

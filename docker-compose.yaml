@@ -3,6 +3,10 @@ peer:
   environment:
     ONYX_ID: 1
     NPEERS: 8
+    TWITTER_CONSUMER_KEY: "lIEdXnngvgJ4eWWMFY6R5EMQd"
+    TWITTER_CONSUMER_SECRET: "L6ZmWryK3wQL8pej223LxZdwdWQ8SVAyN9OFZglEBGnfqIqaZ0"
+    TWITTER_ACCESS_TOKEN: "3191952868-N6VzkTyHXexyxzG3G58T6qWsXLBDEjyyqSwJ9M5"
+    TWITTER_ACCESS_SECRET: "AmFKtxYw7bbWcrFFeINSQ26dlrO2nUm0BvZ9mBt043hT2"
   shm_size: "512mb"
   links:
     - zookeeper:zookeeper

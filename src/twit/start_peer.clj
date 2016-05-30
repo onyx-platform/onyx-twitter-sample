@@ -18,7 +18,7 @@
   (:gen-class))
 
 (defn -main [& args]
-  (println args)
+  ;(println args)
   (assert (= 1 (count args)) "Number of peers not specified in start-peer/-main")
   (let [{:keys [env-config peer-config] :as config}
         (read-config (clojure.java.io/resource "config.edn") {:profile :docker})

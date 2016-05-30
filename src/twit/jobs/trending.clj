@@ -4,9 +4,9 @@
             [onyx.tasks
              [core-async :as core-async-task]
              [twitter :as twitter]]
-            [twit.tasks
-             [reshape :as reshape]
-             [twitter :as tweet]]))
+            [twit.tasks.reshape :as reshape]
+            [twit.tasks.twitter :as tweet]
+            [twit.jobs :refer [register-job]]))
 
 (def segment-pattern
   {:text [:text]
@@ -37,31 +37,18 @@
         (add-task (tweet/emit-hashtag-ids :split-hashtags [:id] [:text] batch-settings))
         (add-task (tweet/window-trending-hashtags :out :hashtag-window)))))
 
-(defn add-test-leafs
-  "Picking up where trending-hashtags-job left off, we add the root and 'leafs'
-  to the graph for a testing environment. This is a core-async input and output
-  channel, and a plain old atom as our :trigger/sync target."
-  [job batch-settings]
-  (let [aggregation-settings
-        {:onyx/group-by-key :hashtag
-         :onyx/flux-policy :recover
-         :onyx/min-peers 1
-         :onyx/max-peers 1
-         :onyx/uniqueness-key :id}]
-    (-> job
-        (add-task (core-async-task/input :in batch-settings))
-        (add-task (core-async-task/output :out (merge batch-settings aggregation-settings))
-                  (tweet/with-trigger-to-atom :hashtag-window :test-atom)))))
+;; "Picking up where trending-hashtags-job left off, we add the root and 'leafs'
+;;   to the graph for a production environment. This is input from the actual live
+;;   twitter stream, a core-async output channel (since we dont care about
+;;   the workflow output, just the :trigger/sync) and a :trigger/sync sending
+;;   data to MySQL."
 
-(defn add-prod-leafs
-  "Picking up where trending-hashtags-job left off, we add the root and 'leafs'
-  to the graph for a production environment. This is input from the actual live
-  twitter stream, a core-async output channel (since we dont care about
-  the workflow output, just the :trigger/sync) and a :trigger/sync sending
-  data to MySQL."
-  [job twitter-config joplin-config batch-settings]
-  (let [connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
-    (-> job
+(defmethod register-job "trending-hashtags"
+  [job-name {:keys [twitter-config joplin-config]}]
+  (let [batch-settings {:onyx/batch-size 1
+                        :onyx/batch-timeout 1000}
+        connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
+    (-> (twit.jobs.trending/trending-hashtags-job batch-settings)
         (add-task (twitter/stream :in [:id :text :createdAt] (merge batch-settings twitter-config)))
         (add-task (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
                                                                       :onyx/flux-policy :recover
