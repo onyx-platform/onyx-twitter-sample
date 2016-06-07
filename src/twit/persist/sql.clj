@@ -29,7 +29,4 @@
              :score state
              :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))}]
     (assert connection-uri "connection-uri not specified")
-    (upsert! connection-uri
-             :Trending
-             row
-             {:score state})))
+    (upsert! connection-uri :Trending row {:score state})))

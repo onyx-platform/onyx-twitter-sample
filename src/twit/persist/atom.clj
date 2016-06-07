@@ -32,4 +32,4 @@
   (let [store-id (get trigger :twit.persist.atom/atom-id)
         store (get-store store-id)]
     (swap! store assoc-in [[(:lower-bound state-event) (:upper-bound state-event)]
-                           (or group-key "none")] state)))
+                           group-key] state)))
