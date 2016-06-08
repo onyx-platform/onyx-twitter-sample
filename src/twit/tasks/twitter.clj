@@ -26,7 +26,7 @@
    :schema {:task-map {::arg1 [s/Any]
                        ::arg2 [s/Any]}}})
 
-(defn window-trending-hashtags
+(s/defn window-trending-hashtags
   [task-name window-id]
   {:task {:windows [{:window/id window-id
                      :window/task task-name
@@ -34,8 +34,8 @@
                      :window/window-key :created-at
                      :window/aggregation :onyx.windowing.aggregation/count}]}})
 
-(defn with-trigger-to-sql
-  [window-id connection-uri]
+(s/defn with-trigger-to-sql
+  [window-id :- s/Keyword connection-uri :- s/Str]
   (fn [task-definition]
     (-> task-definition
         (update-in [:task :triggers] conj
@@ -43,8 +43,10 @@
                     :trigger/refinement :onyx.refinements/accumulating
                     :trigger/on :onyx.triggers/segment
                     :trigger/threshold [5 :elements]
-                    :sql/connection-uri {:connection-uri connection-uri}
-                    :trigger/sync :twit.persist.sql/upsert-trending}))))
+                    :trigger/sync :twit.persist.sql/upsert-trending
+                    :sql/connection-uri {:connection-uri connection-uri}})
+        (update-in [:schema :triggers] conj
+                   {:sql/connection-uri {:connection-uri s/Str}}))))
 
 (defn with-trigger-to-atom
   [window-id atom-id]
@@ -56,9 +58,9 @@
                       :trigger/refinement :onyx.refinements/accumulating
                       :trigger/on :onyx.triggers/segment
                       :trigger/threshold [5 :elements]
-                      :twit.persist.atom/atom-id atom-id
-                      :trigger/sync :twit.persist.atom/persist-trending})
+                      :lib-onyx.persist.atom/atom-id atom-id
+                      :trigger/sync :lib-onyx.persist.atom/persist-trending})
           (update-in [:task :lifecycles] conj
                      {:lifecycle/task task-name
-                      :twit.persist.atom/atom-id atom-id
-                      :lifecycle/calls :twit.persist.atom/calls})))))
+                      :lib-onyx.persist.atom/atom-id atom-id
+                      :lifecycle/calls :lib-onyx.persist.atom/calls})))))

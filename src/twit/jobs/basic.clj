@@ -1,7 +1,7 @@
 (ns twit.jobs.basic
   (:require [onyx.job :refer [add-task]]
-            [twit.tasks.math :as math]
-            [onyx.tasks.core-async :as core-async-task]))
+            [onyx.tasks.core-async :as core-async-task]
+            [twit.tasks.math :as math]))
 
 (defn build-job
   [batch-size batch-timeout]

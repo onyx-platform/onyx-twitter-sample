@@ -1,20 +1,17 @@
 (ns twit.jobs.basic-test
   (:require [aero.core :refer [read-config]]
-            [twit.jobs.basic]
-            [onyx.plugin.core-async :refer [get-core-async-channels
-                                            take-segments!]]
             [clojure.core.async :refer [>!!]]
-            [onyx.test-helper :refer [with-test-env]]
-            [clojure.test :refer [is testing deftest]]
             [clojure.java.io :as io]
-            [onyx.api]))
+            [clojure.test :refer [deftest is testing]]
+            [onyx api
+             [test-helper :refer [with-test-env]]]
+            [onyx.plugin.core-async :refer [get-core-async-channels take-segments!]]
+            twit.jobs.basic
+            ;; Include function definitions
+            twit.tasks.math
+            onyx.tasks.core-async))
 
-(def segments [{:n 1}
-               {:n 2}
-               {:n 3}
-               {:n 4}
-               {:n 5}
-               :done])
+(def segments [{:n 1} {:n 2} {:n 3} {:n 4} {:n 5} :done])
 
 (deftest basic-test
   (testing "That we can have a basic in-out workflow run through Onyx"

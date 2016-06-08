@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/opt/jdk/bin/java -cp /opt/peer.jar "twit.start_peer" "$NPEERS"
+/opt/jdk/bin/java -cp /opt/peer.jar twit.core start-peers "$NPEERS" -p :docker

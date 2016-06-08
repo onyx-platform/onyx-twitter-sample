@@ -1,12 +1,12 @@
 (ns twit.jobs.trending
   (:require [lib-onyx.joplin :as joplin]
-            [onyx.job :refer [add-task]]
+            [onyx.job :refer [add-task register-job]]
             [onyx.tasks
              [core-async :as core-async-task]
              [twitter :as twitter]]
-            [twit.tasks.reshape :as reshape]
-            [twit.tasks.twitter :as tweet]
-            [twit.jobs :refer [register-job]]))
+            [twit.tasks
+             [reshape :as reshape]
+             [twitter :as tweet]]))
 
 (def segment-pattern
   {:text [:text]
@@ -48,7 +48,6 @@
   (let [batch-settings {:onyx/batch-size 1
                         :onyx/batch-timeout 1000}
         connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
-    (println twitter-config)
     (-> (twit.jobs.trending/trending-hashtags-job batch-settings)
         (add-task (twitter/stream :in [:id :text :createdAt] (merge batch-settings twitter-config)))
         (add-task (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
