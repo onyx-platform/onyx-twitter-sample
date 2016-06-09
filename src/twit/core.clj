@@ -4,12 +4,12 @@
             [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [lib-onyx.peer :as peer]
+            [onyx.job]
             ;; Load plugin classes on peer start
             [lib-onyx.joplin]
             [joplin.jdbc.database]
-            [onyx.job]
             [onyx.plugin [core-async] [twitter]]
-            ;; Load persisting plugins
+            ;; Load persistence plugins
             [twit.persist.sql]
             ;; Load our tasks
             [twit.tasks [math] [reshape] [twitter]]
@@ -74,15 +74,18 @@
           (not= (count arguments) 2) (exit 1 (usage summary))
           errors (exit 1 (error-msg errors)))
     (case action
-      "start-peers" (do
-                      (let [{:keys [env-config peer-config] :as config}
-                            (read-config (:config options) {:profile (:profile options)})]
-                        (peer/start-peer argument peer-config env-config)))
-      "submit-job" (do
-                     (let [{:keys [peer-config] :as config}
-                           (read-config (:config options) {:profile (:profile options)})
-                           job-name (if (keyword? argument) argument (str argument))]
-                       (assert-job-exists job-name)
-                       (-> (onyx.api/submit-job peer-config
-                                                (onyx.job/register-job job-name config))
-                           (clojure.pprint/pprint)))))))
+      "start-peers" (let [{:keys [env-config peer-config] :as config}
+                          (read-config (:config options) {:profile (:profile options)})]
+                      (peer/start-peer argument peer-config env-config))
+
+      "submit-job" (let [{:keys [peer-config] :as config}
+                         (read-config (:config options) {:profile (:profile options)})
+                         job-name (if (keyword? argument) argument (str argument))]
+                     (assert-job-exists job-name)
+                     (let [job-id (:job-id
+                                   (onyx.api/submit-job peer-config
+                                                        (onyx.job/register-job job-name config)))]
+                       (println "Successfully submitted job: " job-id)
+                       (println "Blocking on job completion...")
+                       (onyx.api/await-job-completion peer-config job-id)
+                       (exit 0 "Job Completed"))))))
