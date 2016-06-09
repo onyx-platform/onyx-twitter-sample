@@ -1,12 +1,11 @@
 (ns twit.jobs.basic
-  (:require [onyx.job :refer [add-task]]
+  (:require [onyx.job :refer [add-task register-job]]
             [onyx.tasks.core-async :as core-async-task]
             [twit.tasks.math :as math]))
 
-(defn build-job
-  [batch-size batch-timeout]
-  (let [batch-settings {:onyx/batch-size batch-size :onyx/batch-timeout batch-timeout}
-        base-job {:workflow [[:in :inc]
+(defn basic-job
+  [batch-settings]
+  (let [base-job {:workflow [[:in :inc]
                              [:inc :out]]
                   :catalog []
                   :lifecycles []
@@ -18,3 +17,8 @@
         (add-task (core-async-task/input :in batch-settings))
         (add-task (math/inc-key :inc [:n] batch-settings))
         (add-task (core-async-task/output :out batch-settings)))))
+
+(defmethod register-job "basic-job"
+  [job-name config]
+  (let [batch-settings {:onyx/batch-size 1 :onyx/batch-timeout 1000}]
+    (basic-job batch-settings)))

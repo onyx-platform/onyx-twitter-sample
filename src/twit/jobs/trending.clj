@@ -45,10 +45,9 @@
 
 (defmethod register-job "trending-hashtags"
   [job-name {:keys [twitter-config joplin-config]}]
-  (let [batch-settings {:onyx/batch-size 1
-                        :onyx/batch-timeout 1000}
+  (let [batch-settings {:onyx/batch-size 1 :onyx/batch-timeout 1000}
         connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
-    (-> (twit.jobs.trending/trending-hashtags-job batch-settings)
+    (-> (trending-hashtags-job batch-settings)
         (add-task (twitter/stream :in [:id :text :createdAt] (merge batch-settings twitter-config)))
         (add-task (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
                                                                       :onyx/flux-policy :recover
