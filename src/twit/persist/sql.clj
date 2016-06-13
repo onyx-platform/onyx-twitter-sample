@@ -28,5 +28,5 @@
         row {:hashtag (or group-key "none")
              :score state
              :timespan (str (:lower-bound state-event) " - " (:upper-bound state-event))}]
-    (assert connection-uri "connection-uri not specified")
+    (when-not connection-uri (throw (IllegalArgumentException. "connection-uri not specified")))
     (upsert! connection-uri :Trending row {:score state})))

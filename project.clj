@@ -14,7 +14,9 @@
                  [org.onyxplatform/onyx "0.9.7-SNAPSHOT"]
                  [org.onyxplatform/onyx-twitter "0.9.0.1"]]
   :profiles {:dev {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
-                   :source-paths ["src"]}
+                   :source-paths ["src"]
+                   :global-vars {*assert* false}}
              :uberjar {:aot [lib-onyx.media-driver
                              twit.core]
+                       :global-vars {*assert* false}
                        :uberjar-name "peer.jar"}})
