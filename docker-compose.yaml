@@ -3,6 +3,8 @@ peer:
   environment:
     ONYX_ID: 1
     NPEERS: 8
+    MEDIA_DRIVER_JAVA_OPTS: "-server"
+    PEER_JAVA_OPTS: "-server"
     TWITTER_CONSUMER_KEY: ""
     TWITTER_CONSUMER_SECRET: ""
     TWITTER_ACCESS_TOKEN: ""
