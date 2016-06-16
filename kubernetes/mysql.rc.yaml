@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: mysql
+  labels:
+    app: onyx-twitter-sample
+    component: mysql
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: tutum/mysql
+          ports:
+            - containerPort: 3306
+          env:
+            - name: ON_CREATE_DB
+              value: 'onyx'
+            - name: MYSQL_PASS
+              value: 'mypass'

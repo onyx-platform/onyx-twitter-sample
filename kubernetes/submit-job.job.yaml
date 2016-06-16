@@ -1,0 +1,20 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    metadata:
+      name: pi
+      spec:
+        containers:
+          - name: peerimage:latest
+            imagePullPolicy: IfNotPresent
+            image: perl
+            command: ["java",  "-cp", "/opt/peer.jar"]
+            args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
+            restartPolicy: Never
+            env:
+              - name: ONYX_ID
+                value: "SampleCluster1"
