@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: zookeeper
+  labels:
+    app: onyx-twitter-sample
+    component: zookeeper
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: onyxplatform/zookeeper-exhibitor:latest
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+            - containerPort: 8181
+          env:
+          - name: HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP

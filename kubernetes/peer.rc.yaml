@@ -1,0 +1,47 @@
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: onyx-peer
+  labels:
+    app: onyx-twitter-sample
+    component: onyx-peer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: onyx-peer
+    spec:
+      volumes:
+        - name: aeronmem
+          emptyDir:
+            medium: "Memory"
+      containers:
+        - name: onyx-peer
+          imagePullPolicy: IfNotPresent
+          image: peerimage:latest
+          volumeMounts:
+            - mountPath: "/dev/shm"
+              name: aeronmem
+          ports:
+            - containerPort: 40200
+            - containerPort: 40200
+              protocol: UDP
+            - containerPort: 3196
+            - containerPort: 3197
+            - containerPort: 3198
+          env:
+            - name: NPEERS
+              value: "8"
+            - name: ONYX_ID
+              value: "SampleCluster1"
+            - name: MEDIA_DRIVER_JAVA_OPTS
+              value: "-server"
+            - name: PEER_JAVA_OPTS
+              value: "-server"
+            - name: BIND_ADDR
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
