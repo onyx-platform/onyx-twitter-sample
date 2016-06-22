@@ -12,3 +12,4 @@ spec:
       name: sql
   selector:
     component: mysql
+  type: LoadBalancer
