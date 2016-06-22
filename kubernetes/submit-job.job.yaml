@@ -2,19 +2,29 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pi
+  name: submit-job
 spec:
   template:
     metadata:
-      name: pi
-      spec:
-        containers:
-          - name: peerimage:latest
-            imagePullPolicy: IfNotPresent
-            image: perl
-            command: ["java",  "-cp", "/opt/peer.jar"]
-            args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
-            restartPolicy: Never
-            env:
-              - name: ONYX_ID
-                value: "SampleCluster1"
+      name: submit-job
+      labels:
+        app: onyx-twitter-sample
+    spec:
+      containers:
+        - name: submit-job
+          imagePullPolicy: IfNotPresent
+          image: peerimage:latest
+          command: ["java",  "-cp", "/opt/peer.jar"]
+          args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
+          env:
+            - name: ONYX_ID
+              value: "SampleCluster1"
+            - name: TWITTER_CONSUMER_KEY
+              value: "0jnbYIlszFZRD65EgoXaEALZt"
+            - name: TWITTER_CONSUMER_SECRET
+              value: "jZrTr1wmXWrdYwDetqGEfWE4N5chOLwJnQNb22AfygAztPMXMV"
+            - name: TWITTER_ACCESS_TOKEN
+              value: "3191952868-Jm2xKdHNSW5LGtizzwuxzULGpixgS9P4htquYLP"
+            - name: TWITTER_ACCESS_SECRET
+              value: "naSOhPTas9BmjKuls7Rtk2VrGArtdgXGPy9oZdEAW5Duj"
+      restartPolicy: OnFailure
