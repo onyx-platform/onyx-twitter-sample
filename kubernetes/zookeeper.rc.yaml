@@ -1,7 +1,8 @@
-apiVersion: v1
-kind: ReplicationController
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: zookeeper
+  name: zookeeper-1
   labels:
     app: onyx-twitter-sample
     component: zookeeper
@@ -10,19 +11,80 @@ spec:
   template:
     metadata:
       labels:
+        component: zookeeper-1
         app: onyx-twitter-sample
-        component: zookeeper
     spec:
       containers:
-        - name: zookeeper
-          image: onyxplatform/zookeeper-exhibitor:latest
-          ports:
-            - containerPort: 2181
-            - containerPort: 2888
-            - containerPort: 3888
-            - containerPort: 8181
-          env:
-          - name: HOSTNAME
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
+      - name: zookeeper-1
+        image: onyxplatform/zookeeper:alpha
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        env:
+        - name: zk_id
+          value: "1"
+        - name: SERVERS
+          value: > 0.0.0.0,
+                   zookeeper-2.default.svc.cluster.local,
+                   zookeeper-3.default.svc.cluster.local
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zookeeper-2
+  labels:
+    app: onyx-twitter-sample
+    component: zookeeper
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: zookeeper-2
+        app: onyx-twitter-sample
+    spec:
+      containers:
+      - name: zookeeper-2
+        image: onyxplatform/zookeeper:alpha
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        env:
+        - name: zk_id
+          value: "2"
+        - name: SERVERS
+          value: > zookeeper-1.default.svc.cluster.local,
+                   0.0.0.0,
+                   zookeeper-3.default.svc.cluster.local
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: zookeeper-3
+  labels:
+    app: onyx-twitter-sample
+    component: zookeeper
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: zookeeper-3
+        app: onyx-twitter-sample
+    spec:
+      containers:
+      - name: zookeeper-3
+        image: onyxplatform/zookeeper:alpha
+        ports:
+        - containerPort: 2181
+        - containerPort: 2888
+        - containerPort: 3888
+        env:
+        - name: zk_id
+          value: "3"
+        - name: SERVERS
+          value: > zookeeper-1.default.svc.cluster.local,
+                   zookeeper-2.default.svc.cluster.local,
+                   0.0.0.0
