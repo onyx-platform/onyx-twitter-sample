@@ -1,6 +1,6 @@
 ---
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: onyx-peer
   labels:
@@ -36,11 +36,13 @@ spec:
             - name: NPEERS
               value: "8"
             - name: ONYX_ID
-              value: "SampleCluster1"
+              value: "TwitterSample"
             - name: MEDIA_DRIVER_JAVA_OPTS
               value: "-server"
             - name: PEER_JAVA_OPTS
-              value: "-server"
+              value: "-XX:+UseG1GC -server"
+            - name: ZOOKEEPER_ADDR
+              value: 'zookeeper-1.default.svc.cluster.local:2181,zookeeper-2.default.svc.cluster.local:2181,zookeeper-3.default.svc.cluster.local:2181'
             - name: BIND_ADDR
               valueFrom:
                 fieldRef:

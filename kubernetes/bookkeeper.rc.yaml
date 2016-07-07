@@ -1,0 +1,39 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bookkeeper-bookie
+  labels:
+    app: onyx-twitter-sample
+    component: bookkeeper-bookie
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: bookkeeper-bookie
+    spec:
+      containers:
+        - name: bookie
+          image: onyxplatform/bookkeeper:alpha
+          env:
+          - name: BOOKKEEPER_ZOOKEEPER_CONNECT
+            value: zookeeper-1.default.svc.cluster.local:2181
+          ports:
+          - containerPort: 3181
+            name: bookkeeper
+          volumeMounts:
+          - name: bookkeeper-persistent-index
+            mountPath: /data/index
+          - name: bookkeeper-persistent-journal
+            mountPath: /data/journal
+          - name: bookkeeper-persistent-ledger
+            mountPath: /data/ledger
+      volumes:
+        - name: bookkeeper-persistent-index
+          emptyDir: {}
+        - name: bookkeeper-persistent-journal
+          emptyDir: {}
+        - name: bookkeeper-persistent-ledger
+          emptyDir: {}

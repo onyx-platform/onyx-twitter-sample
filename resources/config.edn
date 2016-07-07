@@ -1,34 +1,28 @@
 {:env-config
- {:onyx/tenancy-id #profile {:default "1"
-                             :docker #env ONYX_ID}
-  :onyx.bookkeeper/server? true
-  :onyx.bookkeeper/local-quorum? true
-  :onyx.bookkeeper/delete-server-data? true
-  :onyx.bookkeeper/local-quorum-ports [3196 3197 3198]
-  :onyx.bookkeeper/port 3196
-  :zookeeper/address #profile {:default "127.0.0.1:2181"
-                               :docker "zookeeper:2181"}
-  :zookeeper/server? #profile {:default true
-                               :docker false}
+ {:onyx/tenancy-id #profile {:default "1" :docker #env ONYX_ID}
+  :onyx.bookkeeper/server? #profile {:default true
+                                     :docker false}
+  :onyx.bookkeeper/local-quorum? #profile {:default true
+                                           :docker false}
+  :onyx.bookkeeper/delete-server-data? #profile {:default true
+                                                 :docker false}
+  :onyx.bookkeeper/local-quorum-ports #profile {:default [3181 3182 3183]
+                                                :docker false}
+  :zookeeper/address #or [#env ZOOKEEPER_ADDR "127.0.0.1:2181"]
+  :zookeeper/server? #profile {:default true :docker false}
   :zookeeper.server/port 2181
-  :onyx.log/config #profile {:default nil
-                             :docker {:level :info}}}
+  :onyx.log/config #profile {:default nil :docker {:level :info}}}
  :peer-config
- {:onyx/tenancy-id #profile {:default "1"
-                             :docker #env ONYX_ID}
-  :zookeeper/address #profile {:default "127.0.0.1:2181"
-                               :docker "zookeeper:2181"}
+ {:onyx/tenancy-id #profile {:default "1" :docker #env ONYX_ID}
+  :zookeeper/address #profile {:default "127.0.0.1:2181" :docker "zookeeper:2181"}
   :onyx.peer/job-scheduler :onyx.job-scheduler/greedy
   :onyx.peer/zookeeper-timeout 60000
-  :onyx.messaging/allow-short-circuit? #profile {:default false
-                                                 :docker true}
+  :onyx.messaging/allow-short-circuit? #profile {:default false :docker true}
   :onyx.messaging/impl :aeron
   :onyx.messaging/bind-addr #or [#env BIND_ADDR "localhost"]
   :onyx.messaging/peer-port 40200
-  :onyx.messaging.aeron/embedded-driver? #profile {:default true
-                                                   :docker false}
-  :onyx.log/config #profile {:default nil
-                             :docker {:level :info}}}
+  :onyx.messaging.aeron/embedded-driver? #profile {:default true :docker false}
+  :onyx.log/config #profile {:default nil :docker {:level :info}}}
  :twitter-config
  {:twitter/consumer-key #or [#env TWITTER_CONSUMER_KEY]
   :twitter/consumer-secret #or [#env TWITTER_CONSUMER_SECRET]
