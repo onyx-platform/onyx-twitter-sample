@@ -8,13 +8,13 @@
                                                  :docker false}
   :onyx.bookkeeper/local-quorum-ports #profile {:default [3181 3182 3183]
                                                 :docker false}
-  :zookeeper/address #or [#env ZOOKEEPER_ADDR "127.0.0.1:2181"]
+  :zookeeper/address {:default "127.0.0.1:2181" :docker #env ZOOKEEPER_ADDR}
   :zookeeper/server? #profile {:default true :docker false}
   :zookeeper.server/port 2181
   :onyx.log/config #profile {:default nil :docker {:level :info}}}
  :peer-config
  {:onyx/tenancy-id #profile {:default "1" :docker #env ONYX_ID}
-  :zookeeper/address #profile {:default "127.0.0.1:2181" :docker "zookeeper:2181"}
+  :zookeeper/address #profile {:default "127.0.0.1:2181" :docker #env ZOOKEEPER_ADDR}
   :onyx.peer/job-scheduler :onyx.job-scheduler/greedy
   :onyx.peer/zookeeper-timeout 60000
   :onyx.messaging/allow-short-circuit? #profile {:default false :docker true}
