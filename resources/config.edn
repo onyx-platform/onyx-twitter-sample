@@ -6,8 +6,7 @@
                                            :docker false}
   :onyx.bookkeeper/delete-server-data? #profile {:default true
                                                  :docker false}
-  :onyx.bookkeeper/local-quorum-ports #profile {:default [3181 3182 3183]
-                                                :docker false}
+  :onyx.bookkeeper/local-quorum-ports [3181 3182 3183]
   :zookeeper/address #or [#env ZOOKEEPER_ADDR "127.0.0.1:2181"]
   :zookeeper/server? #profile {:default true :docker false}
   :zookeeper.server/port 2181

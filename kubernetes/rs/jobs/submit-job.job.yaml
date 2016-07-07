@@ -12,13 +12,14 @@ spec:
     spec:
       containers:
         - name: submit-job
-          imagePullPolicy: IfNotPresent
-          image: peerimage:latest
+          image: onyxplatform/twit:latest
           command: ["java",  "-cp", "/opt/peer.jar"]
           args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
           env:
             - name: ONYX_ID
-              value: "SampleCluster1"
+              value: "TwitterSample"
+            - name: ZOOKEEPER_ADDR
+              value: 'zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181'
             - name: TWITTER_CONSUMER_KEY
               value: "0jnbYIlszFZRD65EgoXaEALZt"
             - name: TWITTER_CONSUMER_SECRET
