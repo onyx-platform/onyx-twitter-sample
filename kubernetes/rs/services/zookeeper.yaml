@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: zookeeper-1
+  name: zookeeper1
   labels:
     app: onyx-twitter-sample
-    component: zookeeper-1
+    component: zookeeper1
 spec:
   ports:
   - name: client
@@ -18,15 +18,15 @@ spec:
     port: 3888
     protocol: TCP
   selector:
-    component: zookeeper-1
+    component: zookeeper1
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: zookeeper-2
+  name: zookeeper2
   labels:
     app: onyx-twitter-sample
-    component: zookeeper-2
+    component: zookeeper2
 spec:
   ports:
   - name: client
@@ -39,15 +39,15 @@ spec:
     port: 3888
     protocol: TCP
   selector:
-    component: zookeeper-2
+    component: zookeeper2
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: zookeeper-3
+  name: zookeeper3
   labels:
     app: onyx-twitter-sample
-    component: zookeeper-3
+    component: zookeeper3
 spec:
   ports:
   - name: client
@@ -60,4 +60,4 @@ spec:
     port: 3888
     protocol: TCP
   selector:
-    component: zookeeper-3
+    component: zookeeper3

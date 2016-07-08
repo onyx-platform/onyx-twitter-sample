@@ -39,7 +39,7 @@ spec:
             - name: PEER_JAVA_OPTS
               value: "-XX:+UseG1GC -server"
             - name: ZOOKEEPER_ADDR
-              value: "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
+              value: "zookeeper1:2181,zookeeper2:2181,zookeeper3:2181"
             - name: BIND_ADDR
               valueFrom:
                 fieldRef:

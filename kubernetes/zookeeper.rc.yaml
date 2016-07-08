@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: zookeeper-1
+  name: zookeeper1
   labels:
     app: onyx-twitter-sample
     component: zookeeper
@@ -11,11 +11,11 @@ spec:
   template:
     metadata:
       labels:
-        component: zookeeper-1
+        component: zookeeper1
         app: onyx-twitter-sample
     spec:
       containers:
-      - name: zookeeper-1
+      - name: zookeeper1
         image: onyxplatform/zookeeper:alpha
         ports:
         - containerPort: 2181
@@ -25,12 +25,12 @@ spec:
         - name: zk_id
           value: "1"
         - name: SERVERS
-          value: '0.0.0.0,zookeeper-2.default.svc.cluster.local,zookeeper-3.default.svc.cluster.local'
+          value: '0.0.0.0,zookeeper2.default.svc.cluster.local,zookeeper3.default.svc.cluster.local'
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: zookeeper-2
+  name: zookeeper2
   labels:
     app: onyx-twitter-sample
     component: zookeeper
@@ -39,11 +39,11 @@ spec:
   template:
     metadata:
       labels:
-        component: zookeeper-2
+        component: zookeeper2
         app: onyx-twitter-sample
     spec:
       containers:
-      - name: zookeeper-2
+      - name: zookeeper2
         image: onyxplatform/zookeeper:alpha
         ports:
         - containerPort: 2181
@@ -53,12 +53,12 @@ spec:
         - name: zk_id
           value: "2"
         - name: SERVERS
-          value: 'zookeeper-1.default.svc.cluster.local,0.0.0.0,zookeeper-3.default.svc.cluster.local'
+          value: 'zookeeper1.default.svc.cluster.local,0.0.0.0,zookeeper3.default.svc.cluster.local'
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: zookeeper-3
+  name: zookeeper3
   labels:
     app: onyx-twitter-sample
     component: zookeeper
@@ -67,11 +67,11 @@ spec:
   template:
     metadata:
       labels:
-        component: zookeeper-3
+        component: zookeeper3
         app: onyx-twitter-sample
     spec:
       containers:
-      - name: zookeeper-3
+      - name: zookeeper3
         image: onyxplatform/zookeeper:alpha
         ports:
         - containerPort: 2181
@@ -81,4 +81,4 @@ spec:
         - name: zk_id
           value: "3"
         - name: SERVERS
-          value: 'zookeeper-1.default.svc.cluster.local,zookeeper-2.default.svc.cluster.local,0.0.0.0'
+          value: 'zookeeper1.default.svc.cluster.local,zookeeper2.default.svc.cluster.local,0.0.0.0'

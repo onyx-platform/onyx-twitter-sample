@@ -20,4 +20,4 @@ spec:
           ports:
             - containerPort: 3000
           args:
-            - "zookeeper-1:2181"
+            - "zookeeper1:2181"

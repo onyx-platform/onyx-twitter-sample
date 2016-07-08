@@ -19,7 +19,7 @@ spec:
           image: onyxplatform/bookkeeper:alpha
           env:
           - name: BOOKKEEPER_ZOOKEEPER_CONNECT
-            value: zookeeper-1.default.svc.cluster.local:2181
+            value: zookeeper1.default.svc.cluster.local:2181
           ports:
           - containerPort: 3181
             name: bookkeeper
