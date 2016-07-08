@@ -1,7 +1,7 @@
 FROM frolvlad/alpine-oraclejdk8:full
 MAINTAINER Gardner Vickers <gardner@vickers.me>
 
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.11.0.1/s6-overlay-amd64.tar.gz /tmp/
+ADD https://github.com/just-containers/s6-overlay/releases/download/v1.18.1.3/s6-overlay-amd64.tar.gz /tmp/
 
 RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C /
 RUN apk add --update libgcc libstdc++ bash bash-doc bash-completion libbz2 musl snappy zlib openssl
