@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/with-contenv bash
 CGROUPS_MEM=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
 MEMINFO_MEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)*1024))
 MEM=$(($MEMINFO_MEM>$CGROUPS_MEM?$CGROUPS_MEM:$MEMINFO_MEM))
@@ -16,9 +16,8 @@ XMX=$(awk '{printf("%d",$1*$2/1024^2)}' <<< " ${MEM} ${JVM_MEDIA_DRIVER_HEAP_RAT
 ### from the address bound to eth0
 #: ${BIND_ADDR:=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)}
 
-
 : ${MEDIA_DRIVER_JAVA_OPTS:='-server'}
-
+echo "MEDIA_BIND_ADDR=$BIND_ADDR"
 /usr/bin/java $MEDIA_DRIVER_JAVA_OPTS \
               "-Xmx${XMX}m" \
               -cp /opt/peer.jar \

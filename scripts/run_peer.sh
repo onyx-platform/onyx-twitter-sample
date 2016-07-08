@@ -1,8 +1,4 @@
 #!/bin/bash
-#export MALLOC_ARENA_MAX=4 # Stop the JVM from being allowed to use up all of
-                          # Docker's virtual memory. Use if it's a problem
-                          # see https://siddhesh.in/posts/malloc-per-thread-arenas-in-glibc.html
-
 CGROUPS_MEM=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
 MEMINFO_MEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)*1024))
 MEM=$(($MEMINFO_MEM>$CGROUPS_MEM?$CGROUPS_MEM:$MEMINFO_MEM))
@@ -22,7 +18,7 @@ XMX=$(awk '{printf("%d",$1*$2/1024^2)}' <<< " ${MEM} ${JVM_PEER_HEAP_RATIO} ")
 
 
 : ${PEER_JAVA_OPTS:='-XX:+UseG1GC -server'}
-
+echo "PEER_BIND_ADDR=$BIND_ADDR"
 /usr/bin/java $PEER_JAVA_OPTS \
               "-Xmx${XMX}m" \
               -cp /opt/peer.jar \
