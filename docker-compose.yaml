@@ -9,27 +9,27 @@ peer:
     MEDIA_DRIVER_JAVA_OPTS: ''
         # JVM options of the peer, defaults to '-server -G1GC'
     PEER_JAVA_OPTS: ''
-    ZOOKEEPER_ADDR: 'zookeeper:2181'
+    ZOOKEEPER_ADDR: 'zookeeper1:2181'
   shm_size: "512mb"
   links:
-    - zookeeper:zookeeper
+    - zookeeper1:zookeeper1
     - mysql:mysql
     - bookkeepera:bookkeepera
     - bookkeeperb:bookkeeperb
     - bookkeeperc:bookkeeperc
 
-zookeeper:
+zookeeper1:
   image: onyxplatform/zookeeper:alpha
   ports:
     - '2181:2181'
 
 dashboard:
-  image: onyxplatform/onyx-dashboard:alpha
+  image: onyxplatform/onyx-dashboard:latest
   ports:
     - '3000:3000'
-  command: 'zookeeper:2181'
+  command: 'zookeeper1:2181'
   links:
-    - zookeeper:zookeeper
+    - zookeeper1:zookeeper1
 
 mysql:
   image: 'tutum/mysql'
@@ -44,24 +44,24 @@ bookkeepera:
   ports:
     - '3181:3181'
   environment:
-    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper:2181
+    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper1:2181
   links:
-    - zookeeper:zookeeper
+    - zookeeper1:zookeeper1
 
 bookkeeperb:
   image: onyxplatform/bookkeeper:alpha
   ports:
     - '3182:3182'
   environment:
-    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper:2181
+    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper1:2181
   links:
-    - zookeeper:zookeeper
+    - zookeeper1:zookeeper1
 
 bookkeeperc:
   image: onyxplatform/bookkeeper:alpha
   ports:
     - '3183:3183'
   environment:
-    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper:2181
+    BOOKKEEPER_ZOOKEEPER_CONNECT: zookeeper1:2181
   links:
-    - zookeeper:zookeeper
+    - zookeeper1:zookeeper1

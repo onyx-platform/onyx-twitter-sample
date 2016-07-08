@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: onyx-dashboard
-          image: onyxplatform/onyx-dashboard:alpha
+          image: onyxplatform/onyx-dashboard:latest
           ports:
             - containerPort: 3000
           args:

@@ -8,13 +8,13 @@
             ;; Load plugin classes on peer start
             [lib-onyx.joplin]
             [joplin.jdbc.database]
-            [onyx.plugin [core-async] [twitter]]
+            [onyx.plugin [core-async] [twitter] [seq]]
             ;; Load persistence plugins
             [twit.persist.sql]
             ;; Load our tasks
-            [twit.tasks [math] [reshape] [twitter]]
+            [twit.tasks [math] [reshape] [twitter] [logging]]
             ;; Load our jobs
-            [twit.jobs [basic] [trending]]))
+            [twit.jobs [basic] [trending] [smoke]]))
 
 (defn file-exists?
   "Check both the file system and the resources/ directory

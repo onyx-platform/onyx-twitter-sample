@@ -64,3 +64,15 @@
                      {:lifecycle/task task-name
                       :lib-onyx.persist.atom/atom-id atom-id
                       :lifecycle/calls :lib-onyx.persist.atom/calls})))))
+
+(defn with-trigger-to-stdout
+  [window-id]
+  (fn [task-definition]
+    (let [task-name (get-in task-definition [:task :task-map :onyx/name])]
+      (-> task-definition
+          (update-in [:task :triggers] conj
+                     {:trigger/window-id window-id
+                      :trigger/refinement :onyx.refinements/accumulating
+                      :trigger/on :onyx.triggers/segment
+                      :trigger/threshold [5 :elements]
+                      :trigger/sync :clojure.core/println})))))
