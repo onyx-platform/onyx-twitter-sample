@@ -1,0 +1,23 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: onyx-dashboard
+  labels:
+    app: onyx-twitter-sample
+    component: onyx-dashboard
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: onyx-dashboard
+    spec:
+      containers:
+        - name: onyx-dashboard
+          image: onyxplatform/onyx-dashboard:alpha
+          ports:
+            - containerPort: 3000
+          args:
+            - "zookeeper-1:2181"
