@@ -20,6 +20,7 @@ spec:
             medium: "Memory"
       containers:
         - name: onyx-peer
+          imagePullPolicy: Always
           image: onyxplatform/twit:latest
           volumeMounts:
             - mountPath: "/dev/shm"
@@ -38,7 +39,7 @@ spec:
             - name: PEER_JAVA_OPTS
               value: "-XX:+UseG1GC -server"
             - name: ZOOKEEPER_ADDR
-              value: 'zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181'
+              value: "zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181"
             - name: BIND_ADDR
               valueFrom:
                 fieldRef:

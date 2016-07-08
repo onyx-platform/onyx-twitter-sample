@@ -25,10 +25,7 @@ spec:
         - name: zk_id
           value: "1"
         - name: SERVERS
-          value: > 
-                  0.0.0.0,
-                  zookeeper-2.default.svc.cluster.local,
-                  zookeeper-3.default.svc.cluster.local
+          value: '0.0.0.0,zookeeper-2.default.svc.cluster.local,zookeeper-3.default.svc.cluster.local'
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -56,10 +53,7 @@ spec:
         - name: zk_id
           value: "2"
         - name: SERVERS
-          value: > 
-                  zookeeper-1.default.svc.cluster.local,
-                  0.0.0.0,
-                  zookeeper-3.default.svc.cluster.local
+          value: 'zookeeper-1.default.svc.cluster.local,0.0.0.0,zookeeper-3.default.svc.cluster.local'
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -87,7 +81,4 @@ spec:
         - name: zk_id
           value: "3"
         - name: SERVERS
-          value: > 
-                  zookeeper-1.default.svc.cluster.local,
-                  zookeeper-2.default.svc.cluster.local,
-                  0.0.0.0
+          value: 'zookeeper-1.default.svc.cluster.local,zookeeper-2.default.svc.cluster.local,0.0.0.0'
