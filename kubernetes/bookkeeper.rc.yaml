@@ -36,6 +36,9 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: bpi
+#      annotations:
+#        volume.alpha.kubernetes.io/storage-class: anything
+# un comment for running in the cloud
         labels:
           component: bookkeeper
       spec:
@@ -45,6 +48,9 @@ spec:
             storage: 2Gi
     - metadata:
         name: bpj
+#      annotations:
+#        volume.alpha.kubernetes.io/storage-class: anything
+# un comment for running in the cloud
         labels:
           component: bookkeeper
       spec:
@@ -54,6 +60,9 @@ spec:
             storage: 2Gi
     - metadata:
         name: bpl
+#      annotations:
+#        volume.alpha.kubernetes.io/storage-class: anything
+# un comment for running in the cloud
         labels:
           component: bookkeeper
       spec:

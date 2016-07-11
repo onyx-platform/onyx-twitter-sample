@@ -1,63 +1,21 @@
 ---
+# A headless service to create DNS records
 apiVersion: v1
 kind: Service
 metadata:
-  name: zookeeper1
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: zk
   labels:
     app: onyx-twitter-sample
-    component: zookeeper1
+    component: zk
 spec:
   ports:
-  - name: client
-    port: 2181
-    protocol: TCP
-  - name: follower
-    port: 2888
-    protocol: TCP
-  - name: leader
-    port: 3888
-    protocol: TCP
+  - port: 2888
+    name: peer
+  - port: 3888
+    name: leader-election
+  # *.zk.default.svc.cluster.local
+  clusterIP: None
   selector:
-    component: zookeeper1
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: zookeeper2
-  labels:
-    app: onyx-twitter-sample
-    component: zookeeper2
-spec:
-  ports:
-  - name: client
-    port: 2181
-    protocol: TCP
-  - name: follower
-    port: 2888
-    protocol: TCP
-  - name: leader
-    port: 3888
-    protocol: TCP
-  selector:
-    component: zookeeper2
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: zookeeper3
-  labels:
-    app: onyx-twitter-sample
-    component: zookeeper3
-spec:
-  ports:
-  - name: client
-    port: 2181
-    protocol: TCP
-  - name: follower
-    port: 2888
-    protocol: TCP
-  - name: leader
-    port: 3888
-    protocol: TCP
-  selector:
-    component: zookeeper3
+    component: zk

@@ -1,84 +1,106 @@
----
-apiVersion: extensions/v1beta1
-kind: Deployment
+## From kubernetes/contrib/pets/zookeeper/zookeeper.yaml
+apiVersion: apps/v1alpha1
+kind: PetSet
 metadata:
-  name: zookeeper1
-  labels:
-    app: onyx-twitter-sample
-    component: zookeeper
+  name: zoo
 spec:
-  replicas: 1
+  serviceName: "zk"
+  replicas: 3
   template:
     metadata:
       labels:
-        component: zookeeper1
         app: onyx-twitter-sample
+        component: zk
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+        pod.alpha.kubernetes.io/init-containers: '[
+            {
+                "name": "install",
+                "image": "gcr.io/google_containers/zookeeper-install:0.1",
+                "imagePullPolicy": "Always",
+                "args": ["--version=3.5.0-alpha", "--install-into=/opt", "--work-dir=/work-dir"],
+                "volumeMounts": [
+                    {
+                        "name": "opt",
+                        "mountPath": "/opt/"
+                    },
+                    {
+                        "name": "workdir",
+                        "mountPath": "/work-dir"
+                    }
+                ]
+            },
+            {
+                "name": "bootstrap",
+                "image": "java:openjdk-8-jre",
+                "command": ["/work-dir/peer-finder"],
+                "args": ["-on-start=\"/work-dir/on-start.sh\"", "-service=zk"],
+                "env": [
+                  {
+                      "name": "POD_NAMESPACE",
+                      "valueFrom": {
+                          "fieldRef": {
+                              "apiVersion": "v1",
+                              "fieldPath": "metadata.namespace"
+                          }
+                      }
+                   }
+                ],
+                "volumeMounts": [
+                    {
+                        "name": "opt",
+                        "mountPath": "/opt/"
+                    },
+                    {
+                        "name": "workdir",
+                        "mountPath": "/work-dir"
+                    },
+                    {
+                        "name": "datadir",
+                        "mountPath": "/tmp/zookeeper"
+                    }
+                ]
+            }
+        ]'
     spec:
       containers:
-      - name: zookeeper1
-        image: onyxplatform/zookeeper:alpha
+      - name: zk
+        image: java:openjdk-8-jre
         ports:
-        - containerPort: 2181
         - containerPort: 2888
+          name: peer
         - containerPort: 3888
-        env:
-        - name: zk_id
-          value: "1"
-        - name: SERVERS
-          value: '0.0.0.0,zookeeper2.default.svc.cluster.local,zookeeper3.default.svc.cluster.local'
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: zookeeper2
-  labels:
-    app: onyx-twitter-sample
-    component: zookeeper
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        component: zookeeper2
-        app: onyx-twitter-sample
+          name: leader-election
+        command:
+        - /opt/zookeeper/bin/zkServer.sh
+        args:
+        - start-foreground
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "/opt/zookeeper/bin/zkCli.sh ls /"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: datadir
+          mountPath: /tmp/zookeeper
+        - name: opt
+          mountPath: /opt/
+      volumes:
+      - name: opt
+        emptyDir: {}
+      - name: workdir
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+#      annotations:
+#        volume.alpha.kubernetes.io/storage-class: anything
+# un comment for running in the cloud
     spec:
-      containers:
-      - name: zookeeper2
-        image: onyxplatform/zookeeper:alpha
-        ports:
-        - containerPort: 2181
-        - containerPort: 2888
-        - containerPort: 3888
-        env:
-        - name: zk_id
-          value: "2"
-        - name: SERVERS
-          value: 'zookeeper1.default.svc.cluster.local,0.0.0.0,zookeeper3.default.svc.cluster.local'
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: zookeeper3
-  labels:
-    app: onyx-twitter-sample
-    component: zookeeper
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        component: zookeeper3
-        app: onyx-twitter-sample
-    spec:
-      containers:
-      - name: zookeeper3
-        image: onyxplatform/zookeeper:alpha
-        ports:
-        - containerPort: 2181
-        - containerPort: 2888
-        - containerPort: 3888
-        env:
-        - name: zk_id
-          value: "3"
-        - name: SERVERS
-          value: 'zookeeper1.default.svc.cluster.local,zookeeper2.default.svc.cluster.local,0.0.0.0'
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi
