@@ -1,43 +1,4 @@
 ---
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: bookkeeper-bookie
-  labels:
-    app: onyx-twitter-sample
-    component: bookkeeper-bookie
-spec:
-  replicas: 3
-  template:
-    metadata:
-      labels:
-        app: onyx-twitter-sample
-        component: bookkeeper-bookie
-    spec:
-      containers:
-        - name: bookie
-          image: onyxplatform/bookkeeper:alpha
-          env:
-          - name: BOOKKEEPER_ZOOKEEPER_CONNECT
-            value: zookeeper1.default.svc.cluster.local:2181
-          ports:
-          - containerPort: 3181
-            name: bookkeeper
-          volumeMounts:
-          - name: bookkeeper-persistent-index
-            mountPath: /data/index
-          - name: bookkeeper-persistent-journal
-            mountPath: /data/journal
-          - name: bookkeeper-persistent-ledger
-            mountPath: /data/ledger
-      volumes:
-        - name: bookkeeper-persistent-index
-          emptyDir: {}
-        - name: bookkeeper-persistent-journal
-          emptyDir: {}
-        - name: bookkeeper-persistent-ledger
-          emptyDir: {}
----
 apiVersion: apps/v1alpha1
 kind: PetSet
 metadata:
@@ -62,52 +23,45 @@ spec:
           image: onyxplatform/bookkeeper:latest
           env:
           - name: BOOKKEEPER_ZOOKEEPER_CONNECT
-            value: zookeeper1.default.svc.cluster.local:2181
+            value: zookeeper1:2181,zookeeper2:2181,zookeeper3:2181
           ports:
           - containerPort: 3181
-            name: bookkeeper
           volumeMounts:
-          - name: bookkeeper-persistent-index
+          - name: bpi
             mountPath: /data/index
-          - name: bookkeeper-persistent-journal
+          - name: bpj
             mountPath: /data/journal
-          - name: bookkeeper-persistent-ledger
+          - name: bpl
             mountPath: /data/ledger
-      volumes:
-        - name: bookkeeper-persistent-index
-          emptyDir: {}
-        - name: bookkeeper-persistent-journal
-          emptyDir: {}
-        - name: bookkeeper-persistent-ledger
-          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
-        name: bookkeeper-persistent-index
-        annotations:
-          volume.alpha.kubernetes.io/storage-class: anything
+        name: bpi
+        labels:
+          component: bookkeeper
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 1Gi
+            storage: 2Gi
     - metadata:
-        name: bookkeeper-persistent-index
-        annotations:
-          volume.alpha.kubernetes.io/storage-class: anything
+        name: bpj
+        labels:
+          component: bookkeeper
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 1Gi
+            storage: 2Gi
     - metadata:
-        name: bookkeeper-persistent-index
-        annotations:
-          volume.alpha.kubernetes.io/storage-class: anything
+        name: bpl
+        labels:
+          component: bookkeeper
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 1Gi
+            storage: 2Gi
 
 
 ## address bookie{0...N}.bookkeeper.default.svc.cluster.local
+### /opt/bookkeeper/bin/bookkeeper shell metaformat -nonInteractive &> /dev/null
