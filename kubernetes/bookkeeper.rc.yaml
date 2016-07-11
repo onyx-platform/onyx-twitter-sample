@@ -23,7 +23,7 @@ spec:
           image: onyxplatform/bookkeeper:latest
           env:
           - name: BOOKKEEPER_ZOOKEEPER_CONNECT
-            value: zookeeper1:2181,zookeeper2:2181,zookeeper3:2181
+            value: zk:2181
           ports:
           - containerPort: 3181
           volumeMounts:
