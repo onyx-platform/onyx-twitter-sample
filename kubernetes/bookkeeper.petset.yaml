@@ -48,15 +48,15 @@ spec:
           volumeMounts:
           - name: bkdata
             mountPath: /data
-        - name: bookie-autorecovery
-          image: onyxplatform/bookkeeper:latest
-          args: ["autorecovery"]
-          env:
-          - name: "ZOOKEEPER_ADDR"
-            value: "zookeeper:2181"
-          volumeMounts:
-          - name: bkdata
-            mountPath: /data
+        # - name: bookie-autorecovery
+        #   image: onyxplatform/bookkeeper:latest
+        #   args: ["autorecovery"]
+        #   env:
+        #   - name: "ZOOKEEPER_ADDR"
+        #     value: "zookeeper:2181"
+        #   volumeMounts:
+        #   - name: bkdata
+        #     mountPath: /data
   volumeClaimTemplates:
     - metadata:
         name: bkdata
