@@ -30,16 +30,16 @@ spec:
             - containerPort: 40200
               protocol: UDP
           env:
+            - name: ONYX_ID
+              value: "T3"
             - name: NPEERS
               value: "8"
-            - name: ONYX_ID
-              value: "TwitterSample"
             - name: MEDIA_DRIVER_JAVA_OPTS
               value: "-server"
             - name: PEER_JAVA_OPTS
               value: "-XX:+UseG1GC -server"
             - name: ZOOKEEPER_ADDR
-              value: "zoo-0.zk.default.svc.cluster.local,zoo-1.zk.default.svc.cluster.local,zoo-2.zk.default.svc.cluster.local"
+              value: "zookeeper:2181"
             - name: BIND_ADDR
               valueFrom:
                 fieldRef:

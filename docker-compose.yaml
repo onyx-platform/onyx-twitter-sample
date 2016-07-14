@@ -10,6 +10,10 @@ peer:
         # JVM options of the peer, defaults to '-server -G1GC'
     PEER_JAVA_OPTS: ''
     ZOOKEEPER_ADDR: 'zookeeper1:2181'
+    TWITTER_CONSUMER_KEY: "0jnbYIlszFZRD65EgoXaEALZt"
+    TWITTER_CONSUMER_SECRET: "jZrTr1wmXWrdYwDetqGEfWE4N5chOLwJnQNb22AfygAztPMXMV"
+    TWITTER_ACCESS_TOKEN: "3191952868-Jm2xKdHNSW5LGtizzwuxzULGpixgS9P4htquYLP"
+    TWITTER_ACCESS_SECRET: "naSOhPTas9BmjKuls7Rtk2VrGArtdgXGPy9oZdEAW5Duj"
   shm_size: "512mb"
   links:
     - zookeeper1:zookeeper1

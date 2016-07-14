@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: bookkeeper
+  labels:
+    app: onyx-twitter-sample
+    component: bookkeeper
+spec:
+  serviceName: "bookkeeper"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: onyx-twitter-sample
+        component: bookkeeper
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+        pod.alpha.kubernetes.io/init-containers: '[
+        {
+            "name": "metaformat",
+            "image": "onyxplatform/bookkeeper:latest",
+            "imagePullPolicy": "Always",
+            "command": ["/bin/bash", "-c",
+                        "/opt/bookkeeper/bin/bookkeeper shell metaformat -nonInteractive || true"],
+            "env": [
+            {"name": "ZOOKEEPER_ADDR",
+             "value": "zookeeper:2181"}
+            ],
+            "volumeMounts": [
+                {
+                  "name": "bkdata",
+                  "mountpath": "/data"
+                }
+            ]
+        }
+        ]'
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: bookie
+          image: onyxplatform/bookkeeper:latest
+          ports:
+          - containerPort: 3181
+          env:
+          - name: "ZOOKEEPER_ADDR"
+            value: "zookeeper:2181"
+          volumeMounts:
+          - name: bkdata
+            mountPath: /data
+        - name: bookie-autorecovery
+          image: onyxplatform/bookkeeper:latest
+          args: ["autorecovery"]
+          env:
+          - name: "ZOOKEEPER_ADDR"
+            value: "zookeeper:2181"
+          volumeMounts:
+          - name: bkdata
+            mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: bkdata
+#        annotations:
+#          volume.alpha.kubernetes.io/storage-class: anything
+        labels:
+          component: bookkeeper
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+---
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: bookkeeper
+  labels:
+    app: onyx-twitter-sample
+    component: bookkeeper-bookie
+spec:
+  ports:
+  ports:
+    - name: bookie
+      port: 3181
+      protocol: TCP
+  # *.bookeeper.default.svc.cluster.local
+  clusterIP: None
+  selector:
+    component: bookkeeper

@@ -4,18 +4,14 @@
             [twit.tasks.math :as math]
             [onyx.tasks.seq :as s]
             [twit.tasks.logging :refer [with-segment-logging]]
-            [twit.tasks.twitter :refer [with-trigger-to-stdout]]))
+            [twit.tasks.twitter]))
 
 (defn smoketest-job
   [batch-settings]
   (let [base-job {:workflow [[:in :out]]
                   :catalog []
                   :lifecycles []
-                  :windows [{:window/id :collect
-                             :window/task :out
-                             :window/type :global
-                             :window/window-key :created-at
-                             :window/aggregation :onyx.windowing.aggregation/conj}]
+                  :windows []
                   :triggers []
                   :flow-conditions []
                   :task-scheduler :onyx.task-scheduler/balanced}]
@@ -26,8 +22,7 @@
         (add-task (core-async-task/output :out
                                           (merge batch-settings
                                                  {:onyx/uniqueness-key :val}))
-                  (with-segment-logging)
-                  (with-trigger-to-stdout :collect)))))
+                  (with-segment-logging)))))
 
 (defmethod register-job "smoke-test"
   [job-name _]

@@ -4,7 +4,7 @@ kind: PetSet
 metadata:
   name: zoo
 spec:
-  serviceName: "zk"
+  serviceName: "zookeeper"
   replicas: 3
   template:
     metadata:
@@ -16,25 +16,21 @@ spec:
         pod.alpha.kubernetes.io/init-containers: '[
             {
                 "name": "install",
-                "image": "gcr.io/google_containers/zookeeper-install:0.1",
+                "image": "onyxplatform/zookeeper:latest",
                 "imagePullPolicy": "Always",
-                "args": ["--version=3.5.0-alpha", "--install-into=/opt", "--work-dir=/work-dir"],
+                "command": ["/workdir/install.sh"],
                 "volumeMounts": [
                     {
-                        "name": "opt",
-                        "mountPath": "/opt/"
-                    },
-                    {
-                        "name": "workdir",
-                        "mountPath": "/work-dir"
+                        "name": "confdir",
+                        "mountPath": "/opt/zookeeper/conf"
                     }
                 ]
             },
             {
                 "name": "bootstrap",
-                "image": "java:openjdk-8-jre",
-                "command": ["/work-dir/peer-finder"],
-                "args": ["-on-start=\"/work-dir/on-start.sh\"", "-service=zk"],
+                "image": "onyxplatform/zookeeper:latest",
+                "command": ["/workdir/peer-finder"],
+                "args": ["-on-start=\"/workdir/on-start.sh\"", "-service=zookeeper"],
                 "env": [
                   {
                       "name": "POD_NAMESPACE",
@@ -48,16 +44,12 @@ spec:
                 ],
                 "volumeMounts": [
                     {
-                        "name": "opt",
-                        "mountPath": "/opt/"
-                    },
-                    {
-                        "name": "workdir",
-                        "mountPath": "/work-dir"
-                    },
-                    {
                         "name": "datadir",
                         "mountPath": "/tmp/zookeeper"
+                    },
+                    {
+                        "name": "confdir",
+                        "mountPath": "/opt/zookeeper/conf"
                     }
                 ]
             }
@@ -65,7 +57,7 @@ spec:
     spec:
       containers:
       - name: zk
-        image: java:openjdk-8-jre
+        image: onyxplatform/zookeeper:latest
         ports:
         - containerPort: 2888
           name: peer
@@ -86,10 +78,10 @@ spec:
         volumeMounts:
         - name: datadir
           mountPath: /tmp/zookeeper
-        - name: opt
-          mountPath: /opt/
+        - name: confdir
+          mountPath: /opt/zookeeper/conf
       volumes:
-      - name: opt
+      - name: confdir
         emptyDir: {}
       - name: workdir
         emptyDir: {}
@@ -103,3 +95,24 @@ spec:
       resources:
         requests:
           storage: 5Gi
+---
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: zookeeper
+  labels:
+    app: onyx-twitter-sample
+    component: zk
+spec:
+  ports:
+  - port: 2888
+    name: peer
+  - port: 3888
+    name: leader-election
+  # *.zk.default.svc.cluster.local
+  clusterIP: None
+  selector:
+    component: zk

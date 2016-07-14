@@ -5,6 +5,7 @@ metadata:
   name: submit-job
   labels:
     app: onyx-twitter-sample
+    component: onyx-peer
 spec:
   template:
     metadata:
@@ -17,12 +18,12 @@ spec:
           imagePullPolicy: Always
           image: onyxplatform/twit:latest
           command: ["java",  "-cp", "/opt/peer.jar"]
-          args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
+          args: ["twit.core", "submit-job", "smoke-test", "-p", ":docker"]
           env:
             - name: ONYX_ID
-              value: "TwitterSample"
+              value: "T3"
             - name: ZOOKEEPER_ADDR
-              value: "zoo-0.zk.default.svc.cluster.local,zoo-1.zk.default.svc.cluster.local,zoo-2.zk.default.svc.cluster.local"
+              value: "zookeeper:2181"
             - name: TWITTER_CONSUMER_KEY
               value: "0jnbYIlszFZRD65EgoXaEALZt"
             - name: TWITTER_CONSUMER_SECRET
@@ -31,4 +32,4 @@ spec:
               value: "3191952868-Jm2xKdHNSW5LGtizzwuxzULGpixgS9P4htquYLP"
             - name: TWITTER_ACCESS_SECRET
               value: "naSOhPTas9BmjKuls7Rtk2VrGArtdgXGPy9oZdEAW5Duj"
-      restartPolicy: OnFailure
+      restartPolicy: Never
