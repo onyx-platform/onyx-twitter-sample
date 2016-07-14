@@ -56,6 +56,7 @@ spec:
         ]'
     spec:
       containers:
+#### Zookeeper
       - name: zk
         image: onyxplatform/zookeeper:latest
         ports:
@@ -75,21 +76,39 @@ spec:
             - "/opt/zookeeper/bin/zkCli.sh ls /"
           initialDelaySeconds: 15
           timeoutSeconds: 5
+        env:
+        - name: JMXPORT
+          value: "20000"
         volumeMounts:
         - name: datadir
           mountPath: /tmp/zookeeper
         - name: confdir
           mountPath: /opt/zookeeper/conf
+#### JMX Prometheus Exporter
+      - name: jmx-exporter
+        image: onyxplatform/jmx_exporter:latest
+        ports:
+          - containerPort: 5500
+            name: http
+        args:
+          - "5500"
+          - "/opt/config/zookeeper.yaml"
+        volumeMounts:
+        - name: zk-jmx-config
+          mountPath: /opt/config
       volumes:
       - name: confdir
         emptyDir: {}
       - name: workdir
         emptyDir: {}
+      - name: zk-jmx-config
+        configMap:
+          name: zk-jmx-config
   volumeClaimTemplates:
   - metadata:
       name: datadir
-#      annotations:
-#        volume.alpha.kubernetes.io/storage-class: anything
+      annotations:
+        volume.alpha.kubernetes.io/storage-class: anything
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
@@ -102,6 +121,8 @@ kind: Service
 metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5500"
   name: zookeeper
   labels:
     app: onyx-twitter-sample
@@ -112,7 +133,35 @@ spec:
     name: peer
   - port: 3888
     name: leader-election
+  - port: 5500
+    name: prometheus
   # *.zk.default.svc.cluster.local
   clusterIP: None
   selector:
     component: zk
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zk-jmx-config
+  namespace: default
+data:
+  zookeeper.yaml: |+
+    hostPort: 127.0.0.1:20000
+    rules:
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d)><>(\\w+)"
+        name: "zookeeper_$2"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d), name1=replica.(\\d)><>(\\w+)"
+        name: "zookeeper_$3"
+        labels:
+          replicaId: "$2"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d), name1=replica.(\\d), name2=(\\w+)><>(\\w+)"
+        name: "zookeeper_$4"
+        labels:
+          replicaId: "$2"
+          memberType: "$3"
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d), name1=replica.(\\d), name2=(\\w+), name3=(\\w+)><>(\\w+)"
+        name: "zookeeper_$4_$5"
+        labels:
+          replicaId: "$2"
+          memberType: "$3"

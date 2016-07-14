@@ -1,15 +1,20 @@
 (ns twit.tasks.reshape
   (:require [clojure.walk :refer [postwalk]]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [taoensso.timbre :refer [info]]))
 
 (defn transform-shape
   "Recursively restructures a segment {:new-key [paths...]}"
   [paths segment]
-  (let [f (fn [[k v]]
-            (if (vector? v)
-              [k (get-in segment v)]
-              [k v]))]
-    (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) paths)))
+  (try
+    (let [f (fn [[k v]]
+              (if (vector? v)
+                [k (get-in segment v)]
+                [k v]))]
+      (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) paths))
+    (catch Exception e
+      (do (info "Could not transform segment: " segment)
+          {}))))
 
 (defn reshape-segment
   "Recursively restructure a segment, like select-keys but with get-in style

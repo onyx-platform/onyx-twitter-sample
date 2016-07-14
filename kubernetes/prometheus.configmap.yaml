@@ -1,0 +1,82 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus
+  namespace: default
+data:
+  prometheus.yml: |-
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+    # etcd is living outside of our cluster and we configure
+    # it directly.
+    - job_name: 'etcd'
+      target_groups:
+      - targets:
+        - 172.17.4.51:2379
+    - job_name: 'kubernetes_components'
+      kubernetes_sd_configs:
+      - api_servers:
+        - 'https://kubernetes'
+        in_cluster: true
+        # This configures Prometheus to identify itself when scraping
+        # metrics from Kubernetes cluster components.
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      # Prometheus provides meta labels for each monitoring targets. We use
+      # these to select targets we want to monitor and to modify labels attached
+      # to scraped metrics.
+      relabel_configs:
+      # Only scrape apiserver and kubelets.
+      - source_labels: [__meta_kubernetes_role]
+        action: keep
+        regex: (?:apiserver|node)
+      # Redefine the Prometheus job based on the monitored Kuberentes component.
+      - source_labels: [__meta_kubernetes_role]
+        target_label: job
+        replacement: kubernetes_$1
+      # Attach all node labels to the metrics scraped from the components running
+      # on that node.
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+    - job_name: 'kubernetes-service-endpoints'
+      kubernetes_sd_configs:
+      - api_servers:
+        - 'https://kubernetes'
+        in_cluster: true
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_role, __meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: endpoint;true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+        action: replace
+        target_label: __scheme__
+        regex: (https?)
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)(?::\d+);(\d+)
+        replacement: $1:$2
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_role]
+        action: replace
+        target_label: kubernetes_role
+      - source_labels: [__meta_kubernetes_service_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+      - source_labels: [__meta_kubernetes_service_label_component]
+        action: replace
+        target_label: component

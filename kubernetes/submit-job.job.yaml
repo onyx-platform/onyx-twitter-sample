@@ -18,7 +18,7 @@ spec:
           imagePullPolicy: Always
           image: onyxplatform/twit:latest
           command: ["java",  "-cp", "/opt/peer.jar"]
-          args: ["twit.core", "submit-job", "smoke-test", "-p", ":docker"]
+          args: ["twit.core", "submit-job", "trending-hashtags", "-p", ":docker"]
           env:
             - name: ONYX_ID
               value: "T3"

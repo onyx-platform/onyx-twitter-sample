@@ -1,18 +1,23 @@
 (ns twit.tasks.twitter
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s]
+            [taoensso.timbre :refer [info]]))
 
 (defn split-on-hashtags
   "Splits segments into multiple segments containing an original hashtag,
   the literal hash of the original tweet id and the hashtag, and the original
   tweet-id"
   [id-ks text-ks segment]
-  (let [matcher (partial re-seq #"\S*#(?:\[[^\]]+\]|\S+)")
-        created-at (get segment :created-at (java.util.Date.))
-        id (get-in segment id-ks)]
-    (mapv (fn [hashtag]
-            (assoc {:id (hash (str hashtag id))
-                    :tweet-id id
-                    :created-at created-at} :hashtag hashtag)) (matcher (get-in segment text-ks)))))
+  (try
+    (let [matcher (partial re-seq #"\S*#(?:\[[^\]]+\]|\S+)")
+          created-at (get segment :created-at (java.util.Date.))
+          id (get-in segment id-ks)]
+      (mapv (fn [hashtag]
+              (assoc {:id (hash (str hashtag id))
+                      :tweet-id id
+                      :created-at created-at} :hashtag hashtag)) (matcher (get-in segment text-ks))))
+    (catch Exception e
+      (do (info "Could not split on hashtags: " segment)
+          {}))))
 
 (defn emit-hashtag-ids
   "Splits a tweet into individual hashtags with a common id, and a tweet id"
