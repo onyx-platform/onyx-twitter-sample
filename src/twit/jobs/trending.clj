@@ -1,6 +1,7 @@
 (ns twit.jobs.trending
   (:require [lib-onyx.joplin :as joplin]
             [onyx.job :refer [add-task register-job]]
+            [onyx.tasks.null :as null]
             [onyx.tasks
              [core-async :as core-async-task]
              [twitter :as twitter]]
@@ -49,10 +50,9 @@
         connection-uri (get-in joplin-config [:environments :dev 0 :db :url])]
     (-> (trending-hashtags-job batch-settings)
         (add-task (twitter/stream :in [:id :text :createdAt] (merge batch-settings twitter-config)))
-        (add-task (core-async-task/output :out (merge batch-settings {:onyx/group-by-key :hashtag
-                                                                      :onyx/flux-policy :recover
-                                                                      :onyx/min-peers 1
-                                                                      :onyx/max-peers 1
-                                                                      :onyx/uniqueness-key :id}))
+        (add-task (null/output :out (merge batch-settings {:onyx/group-by-key :hashtag
+                                                           :onyx/flux-policy :recover
+                                                           :onyx/n-peers 3
+                                                           :onyx/uniqueness-key :id}))
                   (tweet/with-trigger-to-sql :hashtag-window connection-uri)
                   (joplin/with-joplin-migrations :dev joplin-config)))))

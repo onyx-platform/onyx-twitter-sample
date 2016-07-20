@@ -11,9 +11,10 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.onyxplatform/lib-onyx "0.9.0.1"]
-                 [org.onyxplatform/onyx "0.9.8-SNAPSHOT"]
+                 [org.onyxplatform/onyx "0.9.10-SNAPSHOT"]
                  [org.onyxplatform/onyx-twitter "0.9.0.1"]
-                 [org.onyxplatform/onyx-seq "0.9.7.0"]]
+                 [org.onyxplatform/onyx-seq "0.9.7.0"]
+                 [org.onyxplatform/onyx-metrics "0.9.8.0"]]
   :profiles {:dev {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
                    :source-paths ["src"]
                    :global-vars {*assert* false}}
