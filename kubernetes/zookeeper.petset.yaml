@@ -60,10 +60,14 @@ spec:
       - name: zk
         image: onyxplatform/zookeeper:latest
         ports:
+        - containerPort: 2181
+          name: client
         - containerPort: 2888
           name: peer
         - containerPort: 3888
           name: leader-election
+        - containerPort: 1234
+          name: prometheus
         command:
         - /opt/zookeeper/bin/zkServer.sh
         args:
@@ -73,29 +77,20 @@ spec:
             command:
             - sh
             - -c
-            - "/opt/zookeeper/bin/zkCli.sh ls /"
+            - "unset JVMFLAGS && /opt/zookeeper/bin/zkCli.sh ls /"
+            # Unset JVMFLAGS so we don't bind to 1234 twice
           initialDelaySeconds: 15
           timeoutSeconds: 5
         env:
-        - name: JMXPORT
-          value: "20000"
+        - name: JVMFLAGS
+          value: "-javaagent:/opt/config/jmx_exporter/jmx_prometheus_javaagent.jar=1234:/opt/config/prometheus/zookeeper.yaml"
         volumeMounts:
         - name: datadir
           mountPath: /tmp/zookeeper
         - name: confdir
           mountPath: /opt/zookeeper/conf
-#### JMX Prometheus Exporter
-      - name: jmx-exporter
-        image: onyxplatform/jmx_exporter:latest
-        ports:
-          - containerPort: 5500
-            name: http
-        args:
-          - "5500"
-          - "/opt/config/zookeeper.yaml"
-        volumeMounts:
         - name: zk-jmx-config
-          mountPath: /opt/config
+          mountPath: /opt/config/prometheus
       volumes:
       - name: confdir
         emptyDir: {}
@@ -104,9 +99,17 @@ spec:
       - name: zk-jmx-config
         configMap:
           name: zk-jmx-config
+#### For each pet in the set, create a Volume Claim.
+## Using the annotation volume.alpha.kubernetes.io/storage-class
+## invokes the alpha dynamic volume allocator. There is one provided
+## for Azure/GCE/AWS and a 4th that will just allocate hostDir's
+## NOTE: This must be explicitly enabled like any other `alpha` feature.
   volumeClaimTemplates:
   - metadata:
       name: datadir
+      labels:
+        app: onyx-twitter-sample
+        component: zk
       annotations:
         volume.alpha.kubernetes.io/storage-class: anything
     spec:
@@ -122,32 +125,38 @@ metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
     prometheus.io/scrape: "true"
-    prometheus.io/port: "5500"
+    prometheus.io/port: "1234"
   name: zookeeper
   labels:
     app: onyx-twitter-sample
     component: zk
 spec:
   ports:
+  - port: 2181
+    name: client
   - port: 2888
     name: peer
   - port: 3888
     name: leader-election
-  - port: 5500
+  - port: 1234
     name: prometheus
   # *.zk.default.svc.cluster.local
   clusterIP: None
   selector:
     component: zk
 ---
+# A configmap for configuring how we relabel the JMX data collected by our
+# prometheus sidecar container
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: zk-jmx-config
   namespace: default
+  labels:
+    app: onyx-twitter-sample
+    component: zk
 data:
   zookeeper.yaml: |+
-    hostPort: 127.0.0.1:20000
     rules:
       - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d)><>(\\w+)"
         name: "zookeeper_$2"

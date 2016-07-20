@@ -29,7 +29,7 @@ spec:
             ],
             "volumeMounts": [
                 {
-                  "name": "bkdata",
+                  "name": "datadir",
                   "mountpath": "/data"
                 }
             ]
@@ -41,42 +41,34 @@ spec:
       - name: bookie
         image: onyxplatform/bookkeeper:latest
         ports:
-        - containerPort: 3181
+        - name: client
+          containerPort: 3181
+        - name: prometheus
+          containerPort: 1234
         env:
         - name: "ZOOKEEPER_ADDR"
           value: "zookeeper:2181"
         - name: BOOKIE_EXTRA_OPTS
-          value: "-Dcom.sun.management.jmxremote.port=20000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+          value: "-javaagent:/opt/config/jmx_exporter/jmx_prometheus_javaagent.jar=1234:/opt/config/prometheus/bookkeeper.yaml"
         volumeMounts:
-        - name: bkdata
+        - name: datadir
           mountPath: /data
-        # - name: bookie-autorecovery
-        #   image: onyxplatform/bookkeeper:latest
-        #   args: ["autorecovery"]
-        #   env:
-        #   - name: "ZOOKEEPER_ADDR"
-        #     value: "zookeeper:2181"
-        #   volumeMounts:
-        #   - name: bkdata
-        #     mountPath: /data
-      - name: jmx-exporter
-        image: onyxplatform/jmx_exporter:latest
-        ports:
-        - containerPort: 5500
-          name: http
-        args:
-          - "5500"
-          - "/opt/config/bookkeeper.yaml"
-        volumeMounts:
         - name: bk-jmx-config
-          mountPath: /opt/config
+          mountPath: /opt/config/prometheus
+        readinessProbe:
+          httpGet:
+            path: '/metrics'
+            port: 1234
       volumes:
       - name: bk-jmx-config
         configMap:
           name: bk-jmx-config
   volumeClaimTemplates:
     - metadata:
-        name: bkdata
+        name: datadir
+        labels:
+          app: onyx-twitter-sample
+          component: bookkeeper
         annotations:
           volume.alpha.kubernetes.io/storage-class: anything
         labels:
@@ -94,7 +86,7 @@ metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
     prometheus.io/scrape: "true"
-    prometheus.io/port: "5500"
+    prometheus.io/port: "1234"
   name: bookkeeper
   labels:
     app: onyx-twitter-sample
@@ -106,7 +98,7 @@ spec:
       port: 3181
       protocol: TCP
     - name: prometheus
-      port: 5500
+      port: 1234
   # *.bookeeper.default.svc.cluster.local
   clusterIP: None
   selector:
@@ -116,9 +108,16 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bk-jmx-config
+  labels:
+    app: onyx-twitter-sample
+    component: bookkeeper
   namespace: default
 data:
   bookkeeper.yaml: |+
-    hostPort: 127.0.0.1:20000
     rules:
-      - pattern: ".*"
+      - pattern: "org.apache.BookKeeperService<name0=(\\w+), name1=(\\w+)><>(\\w+)"
+        name: "bookkeeper_$3"
+      - pattern: "org.apache.BookKeeperService<name0=(\\w+)><(\\w+)>(\\w+)"
+        name: "bookkeeper_$2_$3"
+      - pattern: "org.apache.BookKeeperService<name0=(\\w+), name1=(\\w+), name2=(\\w+)><>(\\w+)"
+        name: "bookkeeper_$3_$4"
