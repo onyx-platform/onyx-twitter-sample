@@ -1,8 +1,4 @@
 # onyx-twitter-sample
-Example of an Onyx application using the live twitter stream
+Example of an Onyx application using the live twitter stream. This is under active development currently as we move away from `docker-compose` towards [Kubernetes](http://kubernetes.io/). 
 
-# Usage
-1. Set your twitter API keys in docker-compose.yaml
-2. `lein do clean, uberjar; docker build -t peerimage .`
-3. `docker-compose up`
-4. `docker-compose run --entrypoint=java peer "-cp" "/opt/peer.jar" "twit.core" "submit-job" "trending-hashtags" "-p" ":docker"`
+Assuming you have Kubernetes 1.3+ and a configured dynamic volume provisioner then the provided manfiest files will run. Documentation will become availible as things finalize. 
